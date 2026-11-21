@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { StructuredBlockSchema } from "@property-assistant/contracts";
 import { SYSTEM_PROMPT } from "../src/gemini.provider.js";
+import { FIXTURE_PROPERTIES } from "../src/fixtures.js";
 import { MockChatProvider, respond } from "../src/mock.provider.js";
 import type { ProviderEvent } from "../src/types.js";
 
@@ -14,6 +15,17 @@ async function collect(message: string): Promise<ProviderEvent[]> {
 const blockTypes = (message: string) => respond(message).blocks.map((b) => b.type);
 
 describe("mock provider", () => {
+    it("uses a 50-project fictional catalogue across residential and commercial property types", () => {
+        assert.equal(FIXTURE_PROPERTIES.length, 50);
+        assert.equal(new Set(FIXTURE_PROPERTIES.map((project) => project.id)).size, 50);
+        assert.ok(FIXTURE_PROPERTIES.some((project) => project.configurations.some((configuration) => configuration.label === "Studio")));
+        assert.ok(FIXTURE_PROPERTIES.some((project) => project.propertyTypes.includes("Villa")));
+        assert.ok(FIXTURE_PROPERTIES.some((project) => project.propertyTypes.includes("Office")));
+        assert.ok(FIXTURE_PROPERTIES.some((project) => project.propertyTypes.includes("Retail")));
+        assert.ok(FIXTURE_PROPERTIES.some((project) => project.propertyTypes.includes("Plot")));
+        assert.ok(FIXTURE_PROPERTIES.some((project) => project.propertyTypes.includes("Warehouse")));
+    });
+
     it("is deterministic", async () => {
         assert.deepEqual(await collect("Show me 3 BHK flats"), await collect("Show me 3 BHK flats"));
     });
@@ -59,10 +71,7 @@ describe("mock provider", () => {
 
         assert.match(office.text, /don't have a sample workspace listed in New Metro/i);
         assert.doesNotMatch(office.text, /\bbedrooms?\b|\bBHK\b/i);
-        assert.equal(cards?.type, "property_cards");
-        if (cards?.type === "property_cards") {
-            assert.deepEqual(cards.data.items.map((project) => project.name), ["Meridian Workyards"]);
-        }
+        assert.equal(cards, undefined);
         assert.deepEqual(office.blocks.at(-1)?.type, "quick_replies");
 
         const missingBudget = respond("Show commercial offices").blocks[0];
@@ -103,6 +112,36 @@ describe("mock provider", () => {
         if (block?.type === "clarification") assert.deepEqual(block.data.missingCriteria, ["bedrooms"]);
     });
 
+    it("finds studios on Golf Course Extension Road within a rupee-denominated range", () => {
+        const result = respond("I'm looking to buy a studio apartment on Golf Course Ext. Road, budget ₹1.5–3 Cr.");
+        const cards = result.blocks.find((block) => block.type === "property_cards");
+
+        assert.equal(cards?.type, "property_cards");
+        assert.doesNotMatch(result.text, /bedrooms|BHK|budget range/i);
+        if (cards?.type === "property_cards") {
+            assert.deepEqual(cards.data.items.map((project) => project.name), ["Olive Quarter", "Luma Residences", "Fernlight"]);
+            assert.ok(cards.data.items.every((project) => project.source === "fixture"));
+        }
+    });
+
+    it("carries the original brief across clarification replies without repeating questions", () => {
+        const request = "I'm looking for 2 BHK apartments";
+        const clarification = respond(request);
+        assert.equal(clarification.blocks[0]?.type, "clarification");
+        const answer = respond("₹2–4 Cr", [
+            { role: "user", content: request },
+            { role: "assistant", content: clarification.text, blocks: clarification.blocks },
+        ]);
+
+        assert.ok(answer.blocks.some((block) => block.type === "property_cards"));
+        assert.ok(answer.blocks.every((block) => block.type !== "clarification"));
+        const cards = answer.blocks.find((block) => block.type === "property_cards");
+        if (cards?.type === "property_cards") {
+            assert.ok(cards.data.items.length > 0);
+            assert.ok(cards.data.items.every((project) => project.configurations.some((configuration) => configuration.bedrooms === 2)));
+        }
+    });
+
     it("only ever returns labelled fixture properties", () => {
         for (const message of [
             "3 bhk under 4 crore",
@@ -135,7 +174,7 @@ describe("mock provider", () => {
         const result = respond("3 bhk under 4 crore").blocks[0];
         assert.equal(result?.type, "property_cards");
         if (result?.type !== "property_cards") return;
-        assert.equal(result.data.items.length, 3);
+        assert.ok(result.data.items.length >= 3);
         assert.ok(result.data.items.every((item) => item.category === "Residential"));
         assert.ok(result.data.items.every((item) => item.photos.length >= 3 && item.image?.url));
 
@@ -143,7 +182,7 @@ describe("mock provider", () => {
         assert.equal(visit?.type, "site_visit_form");
         if (visit?.type === "site_visit_form") {
             const projectChoices = visit.data.fields.find((field) => field.name === "projectId");
-            assert.equal(projectChoices?.options?.length, 4);
+            assert.equal(projectChoices?.options?.length, 50);
             assert.ok(projectChoices?.options?.every((option) => option.image));
         }
     });

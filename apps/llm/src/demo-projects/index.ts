@@ -2,6 +2,7 @@ import { ASTER_VALE } from "./aster-vale.js";
 import { CEDAR_COURTYARDS } from "./cedar-courtyards.js";
 import { MERIDIAN_WORKYARDS } from "./meridian-workyards.js";
 import { MORROW_GROVE } from "./morrow-grove.js";
+import { ADDITIONAL_PROJECTS } from "./additional-projects.js";
 import type { DemoProjectCase } from "./types.js";
 
 export const DEMO_PROJECTS: readonly DemoProjectCase[] = [
@@ -9,6 +10,7 @@ export const DEMO_PROJECTS: readonly DemoProjectCase[] = [
     MORROW_GROVE,
     CEDAR_COURTYARDS,
     MERIDIAN_WORKYARDS,
+    ...ADDITIONAL_PROJECTS,
 ];
 
 export function findDemoProject(message: string): DemoProjectCase {

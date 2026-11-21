@@ -10,6 +10,7 @@ import { MessageRepository } from "./modules/chat/message.repository.js";
 import { ConversationRepository } from "./modules/conversations/conversation.repository.js";
 import { CatalogLeadGateway, LeadService } from "./modules/leads/lead.service.js";
 import { CatalogPropertyService } from "./modules/properties/catalog.service.js";
+import { FixturePropertyService } from "./modules/properties/fixture.service.js";
 import type { PropertyService } from "./modules/properties/property.service.js";
 import { runForSite, SiteAwarePropertyService } from "./modules/properties/site-aware.service.js";
 import { createProvider } from "./providers/factory.js";
@@ -57,17 +58,21 @@ export function buildApp(options: BuildAppOptions = {}) {
     const messages = options.messages ?? new MessageRepository();
     // Lazy: nothing is fetched until a search needs it. Projects follow the website the widget is
     // open on (see the onRequest hook below); other callers get the configured source.
+    const defaultProperties =
+        config.propertySource === "fixtures"
+            ? new FixturePropertyService()
+            : new CatalogPropertyService({ ...config.catalog, log: app.log });
     const properties =
         options.properties ??
-        new SiteAwarePropertyService(
-            new CatalogPropertyService({ ...config.catalog, log: app.log }),
-            (origin) =>
-                new CatalogPropertyService({
-                    ...config.catalog,
-                    apiBaseUrl: `${origin}/api`,
-                    mediaBaseUrl: config.catalog.mediaFollowsSite ? `${origin}/uploads/images` : config.catalog.mediaBaseUrl,
-                    log: app.log,
-                }),
+        new SiteAwarePropertyService(defaultProperties, (origin) =>
+            config.propertySource === "fixtures"
+                ? defaultProperties
+                : new CatalogPropertyService({
+                      ...config.catalog,
+                      apiBaseUrl: `${origin}/api`,
+                      mediaBaseUrl: config.catalog.mediaFollowsSite ? `${origin}/uploads/images` : config.catalog.mediaBaseUrl,
+                      log: app.log,
+                  }),
         );
     const leads =
         options.leads ??

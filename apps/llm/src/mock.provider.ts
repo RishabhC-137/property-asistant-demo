@@ -24,7 +24,7 @@ const QUESTIONS: Record<"budget" | "bedrooms", { id: string; text: string; optio
     bedrooms: { id: "bedrooms", text: "How many bedrooms (BHK) are you looking for?", options: ["2 BHK", "3 BHK", "4 BHK"] },
 };
 
-const QUICK_REPLIES: Record<"budget" | "bedrooms" | "start" | "next" | "officeNext", StructuredBlock> = {
+const QUICK_REPLIES: Record<"budget" | "bedrooms" | "start" | "next", StructuredBlock> = {
     budget: {
         type: "quick_replies",
         data: {
@@ -69,30 +69,120 @@ const QUICK_REPLIES: Record<"budget" | "bedrooms" | "start" | "next" | "officeNe
             ],
         },
     },
-    officeNext: {
-        type: "quick_replies",
-        data: {
-            prompt: "What would you like to know next?",
-            options: [
-                { id: "sizes", label: "Office sizes", value: "Tell me about Meridian Workyards" },
-                { id: "location", label: "Location", value: "Where is Meridian Workyards?" },
-                { id: "callback", label: "Request a callback", value: "Please call me back" },
-            ],
-        },
-    },
 };
 
 const PROPERTY_INTENT =
-    /\b(bhk|flats?|apartments?|propert(y|ies)|projects?|villas?|homes?|offices?|commercial|buy|budget|crore|cr|lakh|sector)\b/;
-const COMMERCIAL_SEARCH = /\bcommercial\b|\boffices?\s+(?:spaces?|projects?|units?|properties?)\b/;
-const BEDROOMS = /\b\d(\.5)?\s*bhk\b/;
-const BUDGET = /\b(\d+(\.\d+)?\s*(cr|crore|crores|lakh|lakhs|lac|l)\b|budget\b)/;
+    /\b(bhk|flats?|apartments?|studios?|propert(y|ies)|projects?|villas?|homes?|offices?|workspaces?|commercial|retail|shops?|plots?|land|warehouses?|industrial|buy|budget|crore|cr|lakh|sector)\b/;
+const COMMERCIAL_SEARCH =
+    /\b(?:commercial|offices?|workspaces?|retail|shops?|warehouses?|industrial)\b|\b(?:offices?|workspaces?)\s+(?:spaces?|projects?|units?|properties?)\b/;
+const OFFICE_SEARCH = /\b(?:offices?|workspaces?)\b/;
+const RETAIL_SEARCH = /\b(?:retail|shops?|stores?)\b/;
+const WAREHOUSE_SEARCH = /\b(?:warehouses?|industrial)\b/;
+const PROPERTY_REQUEST =
+    /\b(?:buy|looking|search|find|show|commercial|projects?|budget|bhk|flats?|apartments?|studios?|villas?|homes?|retail|shops?|plots?|land|warehouses?|industrial)\b|\b(?:offices?|workspaces?)\s+(?:spaces?|projects?|units?|properties?)\b/;
+const PLOT_SEARCH = /\b(?:plots?|land)\b/;
+const STUDIO_SEARCH = /\bstudios?\b/;
+const BEDROOMS = /\b(\d(?:\.5)?)\s*bhk\b/;
+const BUDGET =
+    /\b(?:budget\b|\d+(?:\.\d+)?\s*(?:-|–|—|to)\s*\d+(?:\.\d+)?\s*(?:cr|crore|crores|lakh|lakhs|lac|l)\b|\d+(?:\.\d+)?\s*(?:cr|crore|crores|lakh|lakhs|lac|l)\b)/;
+const BUDGET_RANGE =
+    /(?:₹\s*)?(\d+(?:\.\d+)?)\s*(?:-|–|—|to)\s*(?:₹\s*)?(\d+(?:\.\d+)?)\s*(cr|crores?|lakh|lakhs|lac|l)\b/i;
+const SINGLE_BUDGET =
+    /\b(under|below|less than|up to|upto|within|above|over|more than|budget)\b[^\d₹]{0,16}₹?\s*(\d+(?:\.\d+)?)\s*(cr|crores?|lakh|lakhs|lac|l)\b/i;
+const KNOWN_PLACES = [
+    ...new Set(
+        DEMO_PROJECTS.flatMap(({ card }) => [card.location.localityName, card.location.city])
+            .filter((location): location is string => Boolean(location)),
+    ),
+];
 
 const COMPANY_INTENT =
     /\b(founders?|founded|owners?|ceo|who (runs|owns|started)|your (office|address|website|company|number|phone)|where (are you|is your office)|office|website|about (you|catalog|your company|the company))\b/;
 
-export function respond(message: string): Turn {
+function normalizePlace(value: string): string {
+    return value
+        .toLowerCase()
+        .replace(/\bext\.?\b/g, "extension")
+        .replace(/\brd\.?\b/g, "road")
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim();
+}
+
+function budgetRange(message: string): { min: number | null; max: number | null } | null {
+    const multiplier = (unit: string) => (/^(?:cr|crore)/i.test(unit) ? 10_000_000 : 100_000);
+    const range = message.match(BUDGET_RANGE);
+    if (range) {
+        const unit = multiplier(range[3]!);
+        return { min: Number(range[1]) * unit, max: Number(range[2]) * unit };
+    }
+
+    const single = message.match(SINGLE_BUDGET);
+    if (!single) return null;
+    const amount = Number(single[2]) * multiplier(single[3]!);
+    return /^(?:above|over|more than)$/i.test(single[1]!) ? { min: amount, max: null } : { min: null, max: amount };
+}
+
+function projectMatchesPlace(project: (typeof DEMO_PROJECTS)[number], query: string): boolean {
+    const normalizedQuery = normalizePlace(query);
+    const requestedPlace = query.match(/\b(?:in|on|near)\s+(.+?)(?=,\s*(?:budget|price)|\s+(?:budget|under|below|above|within)\b|$)/i)?.[1];
+    if (requestedPlace) {
+        const normalizedRequestedPlace = normalizePlace(requestedPlace);
+        const recognized = KNOWN_PLACES.some((place) => normalizedRequestedPlace.includes(normalizePlace(place)));
+        const extensionRoad = normalizedRequestedPlace.includes("golf course extension road");
+        if (!recognized && !extensionRoad) return false;
+    }
+
+    for (const location of KNOWN_PLACES) {
+        if (!normalizedQuery.includes(normalizePlace(location))) continue;
+        const matches = location === project.card.location.city || location === project.card.location.localityName;
+        if (!matches) return false;
+    }
+
+    const mentionsExtensionRoad = normalizedQuery.includes("golf course extension road");
+    if (mentionsExtensionRoad) {
+        const locationText = [
+            ...project.card.highlights,
+            ...project.locationAdvantages,
+            ...project.nearby.map((place) => place.name),
+        ]
+            .map(normalizePlace)
+            .join(" ");
+        return locationText.includes("golf course extension road");
+    }
+    return true;
+}
+
+function projectMatchesBudget(project: (typeof DEMO_PROJECTS)[number], range: ReturnType<typeof budgetRange>): boolean {
+    if (!range) return true;
+    const min = project.card.price?.min ?? project.card.price?.max ?? 0;
+    const max = project.card.price?.max ?? project.card.price?.min ?? 0;
+    return (range.max === null || min <= range.max) && (range.min === null || max >= range.min);
+}
+
+function isClarificationReply(history: ProviderInput["history"]): boolean {
+    const lastAssistant = [...history].reverse().find((entry) => entry.role === "assistant");
+    return lastAssistant?.blocks?.some((block) => block.type === "clarification") ?? false;
+}
+
+function searchContextForReply(message: string, history: ProviderInput["history"]): string | null {
+    if (!isClarificationReply(history)) return null;
+
+    const previousRequests: string[] = [];
+    for (let index = history.length - 1; index >= 0; index -= 1) {
+        const entry = history[index]!;
+        if (entry.role === "assistant") {
+            if (entry.blocks?.some((block) => block.type === "clarification")) continue;
+            break;
+        }
+        previousRequests.unshift(entry.content);
+    }
+
+    return [...previousRequests, message].join(" ");
+}
+
+export function respond(message: string, history: ProviderInput["history"] = []): Turn {
     const text = message.toLowerCase();
+    const searchContext = searchContextForReply(message, history);
 
     if (/\b(payment plan|payment schedule|installments?|how (do|can) i pay)\b/.test(text)) {
         const project = findDemoProject(message);
@@ -174,7 +264,7 @@ export function respond(message: string): Turn {
         };
     }
 
-    if (COMPANY_INTENT.test(text) && !COMMERCIAL_SEARCH.test(text)) {
+    if (COMPANY_INTENT.test(text) && !PROPERTY_REQUEST.test(text)) {
         const founder = /\b(founders?|founded|owners?|ceo|who (runs|owns|started))\b/.test(text);
         return {
             text: [
@@ -201,7 +291,7 @@ export function respond(message: string): Turn {
                     type: "property_comparison",
                     data: {
                         title: "Project comparison (demo data)",
-                        items: [...FIXTURE_PROPERTIES],
+                        items: FIXTURE_PROPERTIES.slice(0, 4),
                         attributes: ["price", "price_per_sqft", "configurations", "possession_date", "status"],
                         notice: FIXTURE_NOTICE,
                     },
@@ -224,11 +314,14 @@ export function respond(message: string): Turn {
         };
     }
 
-    if (PROPERTY_INTENT.test(text)) {
+    if (PROPERTY_INTENT.test(text) || searchContext !== null) {
+        const searchText = (searchContext ?? message).toLowerCase();
         const missing: Array<"budget" | "bedrooms"> = [];
-        const commercial = COMMERCIAL_SEARCH.test(text);
-        if (!BUDGET.test(text)) missing.push("budget");
-        if (!commercial && !BEDROOMS.test(text)) missing.push("bedrooms");
+        const commercial = COMMERCIAL_SEARCH.test(searchText);
+        const plot = PLOT_SEARCH.test(searchText);
+        const studio = STUDIO_SEARCH.test(searchText);
+        if (!BUDGET.test(searchText)) missing.push("budget");
+        if (!commercial && !plot && !studio && !BEDROOMS.test(searchText)) missing.push("bedrooms");
 
         if (missing.length > 0) {
             const missingCriteria: SearchCriterion[] = missing;
@@ -246,26 +339,60 @@ export function respond(message: string): Turn {
             };
         }
 
-        const results = FIXTURE_PROPERTIES.filter((project) =>
-            commercial ? project.category === "Commercial" : project.category === "Residential",
-        );
+        const bedroomCount = searchText.match(BEDROOMS)?.[1];
+        const requestedBedrooms = bedroomCount ? Number(bedroomCount) : null;
+        const budget = budgetRange(searchText);
+        const results = DEMO_PROJECTS.filter((project) => {
+            const card = project.card;
+            if (studio) {
+                if (!card.propertyTypes.some((type) => /\bstudio\b/i.test(type)) && !card.configurations.some((configuration) => /\bstudio\b/i.test(configuration.label))) {
+                    return false;
+                }
+            } else if (plot) {
+                if (!card.propertyTypes.some((type) => /\b(plot|land)\b/i.test(type))) return false;
+            } else if (OFFICE_SEARCH.test(searchText)) {
+                if (!card.propertyTypes.some((type) => /\boffice\b|\bworkspace\b/i.test(type))) return false;
+            } else if (RETAIL_SEARCH.test(searchText)) {
+                if (!card.propertyTypes.some((type) => /\bretail\b|\bshop\b/i.test(type))) return false;
+            } else if (WAREHOUSE_SEARCH.test(searchText)) {
+                if (!card.propertyTypes.some((type) => /\bwarehouse\b|\bindustrial\b/i.test(type))) return false;
+            } else if (commercial) {
+                if (card.category !== "Commercial") return false;
+            } else if (card.category !== "Residential") {
+                return false;
+            }
+
+            if (requestedBedrooms !== null && !card.configurations.some((configuration) => configuration.bedrooms === requestedBedrooms)) {
+                return false;
+            }
+            return projectMatchesBudget(project, budget) && projectMatchesPlace(project, searchText);
+        });
+        const requestedPlace = searchText.match(/\b(?:in|on|near)\s+(.+?)(?=,\s*(?:budget|price)|\s+(?:budget|under|below|above|within)\b|$)/i)?.[1];
         return {
-            text: commercial
-                ? "I don't have a sample workspace listed in New Metro. Meridian Workyards is a fictional example in Sector 44, Gurugram. Would you like to see its suite sizes or location?"
-                : "Here are some sample results. Live search is not connected yet, so these are fictional demo projects only.",
+            text: results.length === 0 && requestedPlace
+                ? `I don't have a sample ${OFFICE_SEARCH.test(searchText) ? "workspace" : studio ? "studio" : "property"} listed in ${requestedPlace.trim()}. These are fictional demo projects only.`
+                : commercial
+                  ? "Here are some sample commercial properties. Live listing search is not connected, so these are fictional demo projects only."
+                  : plot
+                    ? "Here are some sample plots. Live listing search is not connected, so these are fictional demo projects only."
+                    : studio
+                      ? "Here are some sample studio apartments. Live listing search is not connected, so these are fictional demo projects only."
+                      : "Here are some sample results. Live search is not connected yet, so these are fictional demo projects only.",
             blocks: [
-                {
-                    type: "property_cards",
-                    data: {
-                        title: "Sample results (demo data)",
-                        items: results,
-                        totalResults: null,
-                        notice: FIXTURE_NOTICE,
-                        criteria: null,
-                        query: null,
-                    },
-                },
-                commercial ? QUICK_REPLIES.officeNext : QUICK_REPLIES.next,
+                ...(results.length > 0
+                    ? [{
+                        type: "property_cards" as const,
+                        data: {
+                            title: "Sample results (demo data)",
+                            items: results.slice(0, 12).map(({ card }) => card),
+                            totalResults: results.length,
+                            notice: FIXTURE_NOTICE,
+                            criteria: null,
+                            query: null,
+                        },
+                    }]
+                    : []),
+                QUICK_REPLIES.next,
             ],
         };
     }
@@ -306,7 +433,9 @@ export class MockChatProvider implements ChatProvider {
     }
 
     async *generate(input: ProviderInput): AsyncIterable<ProviderEvent> {
-        const turn = input.page?.pageContent?.text.trim() ? aboutPage(input.page.pageContent) : respond(input.message);
+        const turn = input.page?.pageContent?.text.trim()
+            ? aboutPage(input.page.pageContent)
+            : respond(input.message, input.history);
         for (const delta of chunkText(turn.text)) {
             if (this.chunkDelayMs > 0) await new Promise((r) => setTimeout(r, this.chunkDelayMs));
             yield { kind: "text", delta };

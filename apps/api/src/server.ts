@@ -15,6 +15,11 @@ const start = async () => {
     process.once("SIGTERM", () => void shutdown("SIGTERM"));
 
     try {
+        app.log.info({
+            provider: config.chatProvider,
+            model: config.chatProvider === "gemini" ? config.gemini.model : null,
+            propertySource: config.propertySource,
+        }, "assistant configuration");
         await app.listen({
             port: config.port,
             host: config.host,

@@ -17,6 +17,8 @@ function oneOfFromEnv<const T extends string>(name: string, allowed: readonly T[
     return raw as T;
 }
 
+const geminiApiKey = process.env.GEMINI_API_KEY?.trim() ?? "";
+
 export const config = {
     port: intFromEnv("PORT", 4000),
     host: process.env.HOST ?? "127.0.0.1",
@@ -26,12 +28,14 @@ export const config = {
     /** A pending reply older than this is considered abandoned and may be regenerated. */
     generationLeaseMs: intFromEnv("GENERATION_LEASE_MS", 120_000),
     /** Which provider answers messages. */
-    chatProvider: oneOfFromEnv("CHAT_PROVIDER", ["mock", "gemini"], "mock"),
+    chatProvider: oneOfFromEnv("CHAT_PROVIDER", ["mock", "gemini"], geminiApiKey ? "gemini" : "mock"),
+    /** Demo fixtures are the default; choose "catalog" to use the configured live projects API. */
+    propertySource: oneOfFromEnv("PROPERTY_SOURCE", ["fixtures", "catalog"], "fixtures"),
     gemini: {
-        apiKey: process.env.GEMINI_API_KEY ?? "",
-        model: process.env.GEMINI_MODEL || "gemini-3.5-flash",
+        apiKey: geminiApiKey,
+        model: process.env.GEMINI_MODEL || "gemini-3.5-flash-lite",
         /** Used when the main model is rate-limited (separate quota). Set to "" to disable. */
-        fallbackModel: process.env.GEMINI_FALLBACK_MODEL ?? "gemini-3.5-flash-lite",
+        fallbackModel: process.env.GEMINI_FALLBACK_MODEL ?? "gemini-3.8-flash",
         /** Upstream request timeout; keep it below GENERATION_LEASE_MS. */
         timeoutMs: intFromEnv("GEMINI_TIMEOUT_MS", 60_000),
         /** "minimal" | "low" | "medium" | "high"; "" keeps the model's default. Lower is faster and cheaper. */

@@ -1,102 +1,86 @@
-import { ChatWidget, type ThemeDefinition } from "@property-assistant/chat-ui";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
+import { ChatWidget, createChatApi, type ThemeDefinition } from "@property-assistant/chat-ui";
+import { motion, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api/v1";
+const projectsApi = createChatApi(API_BASE_URL);
+const EMPTY_PROJECT_QUERY = {
+    keywords: null,
+    bedrooms: null,
+    budgetMinInr: null,
+    budgetMaxInr: null,
+    category: null,
+    nearProjectId: null,
+    withinKm: null,
+};
+
+const PROJECT_CATEGORIES = ["All", "Apartments", "Villas", "Offices", "Retail", "Plots", "Warehouses"] as const;
+type ProjectCategory = (typeof PROJECT_CATEGORIES)[number];
+type Project = Awaited<ReturnType<typeof projectsApi.searchProperties>>["data"][number];
+type ProjectStatus = "loading" | "ready" | "error";
 
 const PROPERTY_THEME: ThemeDefinition = {
     base: "light",
-    colorPrimary: "#4057f2",
-    colorOnPrimary: "#ffffff",
-    colorFocus: "#4057f2",
-    colorBackground: "#fffdf9",
-    colorSurface: "#fffdf9",
-    colorSurfaceMuted: "#eef0fb",
-    colorText: "#1d2e3d",
-    colorTextMuted: "#596779",
-    colorBorder: "#dce1ed",
-    colorUserBubble: "#4057f2",
-    colorOnUserBubble: "#ffffff",
-    colorAssistantBubble: "#f0f2fc",
-    colorOnAssistantBubble: "#1d2e3d",
-    radius: "16px",
-    radiusSmall: "11px",
-    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    shadow: "0 22px 60px rgb(34 47 93 / 20%)",
+    colorPrimary: "#252422",
+    colorOnPrimary: "#fffcf2",
+    colorFocus: "#403d39",
+    colorBackground: "#fffcf2",
+    colorSurface: "#fffcf2",
+    colorSurfaceMuted: "#ccc5b9",
+    colorText: "#252422",
+    colorTextMuted: "#403d39",
+    colorBorder: "#ccc5b9",
+    colorUserBubble: "#eb5e28",
+    colorOnUserBubble: "#252422",
+    colorAssistantBubble: "#fffcf2",
+    colorOnAssistantBubble: "#252422",
+    radius: "0px",
+    radiusSmall: "0px",
+    fontFamily: '"Onest", ui-sans-serif, system-ui, sans-serif',
+    shadow: "14px 14px 0 #ccc5b9",
 };
 
-const DEMO_PROJECTS = [
-    {
-        id: "fixture-0001",
-        name: "Aster Vale",
-        type: "Apartments",
-        location: "Sector 65, Gurugram",
-        status: "Under construction",
-        details: "2–4 BHK",
-        price: "From ₹1.58 Cr",
-        image:
-            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=85",
-        imageAlt: "Contemporary home framed by a landscaped garden",
-    },
-    {
-        id: "fixture-0002",
-        name: "Morrow Grove",
-        type: "Apartments",
-        location: "Sector 49, Gurugram",
-        status: "Ready to move",
-        details: "2–3 BHK",
-        price: "From ₹89 Lakh",
-        image:
-            "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=85",
-        imageAlt: "Bright living room with a balcony-facing seating area",
-    },
-    {
-        id: "fixture-0003",
-        name: "Cedar Courtyards",
-        type: "Villas",
-        location: "Sector 33, Sohna",
-        status: "New launch",
-        details: "3–4 BHK",
-        price: "From ₹2.35 Cr",
-        image:
-            "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1200&q=85",
-        imageAlt: "Low-rise home opening onto a landscaped garden",
-    },
-    {
-        id: "fixture-0004",
-        name: "Meridian Workyards",
-        type: "Workspaces",
-        location: "Sector 44, Gurugram",
-        status: "Under construction",
-        details: "750–1,800 sq ft",
-        price: "From ₹78 Lakh",
-        image:
-            "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=85",
-        imageAlt: "Open-plan workspace with shared desks and meeting areas",
-    },
-] as const;
-
-type Project = (typeof DEMO_PROJECTS)[number];
 type ProjectRequest = {
     key: number;
     project: { id: string; name: string };
     text: string;
 };
 
+function getProjectCategory(project: Project): Exclude<ProjectCategory, "All"> {
+    const type = project.propertyTypes.join(" ").toLowerCase();
+    if (type.includes("villa")) return "Villas";
+    if (type.includes("office") || type.includes("workspace")) return "Offices";
+    if (type.includes("retail") || type.includes("shop")) return "Retail";
+    if (type.includes("plot") || type.includes("land")) return "Plots";
+    if (type.includes("warehouse") || type.includes("industrial")) return "Warehouses";
+    return "Apartments";
+}
+
+function projectPrice(project: Project): string {
+    const minimum = project.price?.min;
+    if (minimum === null || minimum === undefined) return "Price on request";
+    if (minimum >= 10_000_000) {
+        const crore = (minimum / 10_000_000).toFixed(2).replace(/\.?0+$/, "");
+        return `From ₹${crore} Cr`;
+    }
+    const lakh = (minimum / 100_000).toFixed(0);
+    return `From ₹${lakh} Lakh`;
+}
+
 export function App() {
     const [chatOpen, setChatOpen] = useState(false);
     const [chatMounted, setChatMounted] = useState(false);
     const [request, setRequest] = useState<ProjectRequest>();
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [projectsStatus, setProjectsStatus] = useState<ProjectStatus>("loading");
+    const [activeProjectCategory, setActiveProjectCategory] = useState<ProjectCategory>("All");
+    const [projectQuery, setProjectQuery] = useState("");
+    const [visibleProjectCount, setVisibleProjectCount] = useState(8);
+    const [projectReloadKey, setProjectReloadKey] = useState(0);
     const requestKey = useRef(0);
     const launcherRef = useRef<HTMLButtonElement>(null);
     const chatPanelRef = useRef<HTMLElement>(null);
-    const heroRef = useRef<HTMLElement>(null);
     const reduceMotion = useReducedMotion() ?? false;
-    const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-    const heroY = useSpring(useTransform(scrollYProgress, [0, 1], [0, 42]), { stiffness: 120, damping: 26 });
-    const heroRotateX = useTransform(scrollYProgress, [0, 1], [0, -3]);
-    const heroRotateY = useTransform(scrollYProgress, [0, 1], [0, 1.5]);
-    const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.07]);
 
     const openChat = useCallback(() => {
         setChatMounted(true);
@@ -107,6 +91,8 @@ export function App() {
         setChatOpen(false);
         window.requestAnimationFrame(() => launcherRef.current?.focus({ preventScroll: true }));
     }, []);
+
+    const retryProjects = useCallback(() => setProjectReloadKey((key) => key + 1), []);
 
     const askAboutProject = useCallback(
         (project: Project) => {
@@ -124,6 +110,39 @@ export function App() {
     useEffect(() => {
         if (request) setRequest(undefined);
     }, [request]);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const loadProjects = async () => {
+            setProjectsStatus("loading");
+            try {
+                const firstPage = await projectsApi.searchProperties(EMPTY_PROJECT_QUERY, { page: 1, limit: 12 });
+                const allProjects = [...firstPage.data];
+                let hasMore = firstPage.pagination.hasMore;
+
+                for (let page = 2; hasMore; page += 1) {
+                    if (page > 50) throw new Error("Project catalogue exceeded the supported page limit.");
+                    const nextPage = await projectsApi.searchProperties(EMPTY_PROJECT_QUERY, { page, limit: 12 });
+                    allProjects.push(...nextPage.data);
+                    hasMore = nextPage.pagination.hasMore;
+                }
+
+                if (!cancelled) {
+                    setProjects(allProjects);
+                    setProjectsStatus("ready");
+                }
+            } catch (error) {
+                console.error("Could not load projects from the API", error);
+                if (!cancelled) setProjectsStatus("error");
+            }
+        };
+
+        void loadProjects();
+        return () => {
+            cancelled = true;
+        };
+    }, [projectReloadKey]);
 
     useEffect(() => {
         if (!chatOpen) return;
@@ -147,14 +166,15 @@ export function App() {
                 <div className="site-header__inner">
                     <a className="brand" href="#top" aria-label="Property Desk home">
                         <svg viewBox="0 0 36 36" aria-hidden="true">
-                            <path d="M5 16.5 18 6l13 10.5v13H5z" />
-                            <path d="M14 29.5V19h8v10.5M11 16h.01M25 16h.01" />
+                            <path d="M5 7h26v22H5z" />
+                            <path d="M5 14h26M12 14v15" />
+                            <path d="M18 7v7" />
                         </svg>
                         <span>Property Desk</span>
                     </a>
 
                     <nav className="site-nav" aria-label="Main navigation">
-                        <a href="#projects">Projects</a>
+                        <a href="#projects">Sample projects</a>
                         <a href="#how-it-works">How it works</a>
                         <button className="button button--small" type="button" onClick={openChat}>
                             Start a chat
@@ -164,74 +184,52 @@ export function App() {
             </header>
 
             <main id="main-content">
-                <motion.section className="hero page-width" id="top" aria-labelledby="hero-title" ref={heroRef}>
+                <motion.section className="hero page-width" id="top" aria-labelledby="hero-title">
                     <motion.div
                         className="hero__copy"
                         initial={reduceMotion ? false : { opacity: 0, y: 22 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.7, ease: "easeOut" }}
                     >
-                        <p className="eyebrow"><span /> Property Desk <span className="eyebrow__divider">/</span> Gurugram</p>
-                        <h1 id="hero-title">Your next place starts with <em>one good question.</em></h1>
+                        <h1 id="hero-title">Find your place. Start with a question.</h1>
                         <p className="hero__intro">
-                            Tell Property Desk what you have in mind. It asks one helpful question at a time, then helps
-                            you compare homes and workspaces around Gurugram.
+                            Tell us what you need. Then compare homes and workspaces around Gurugram.
                         </p>
                         <div className="hero__actions">
                             <button className="button" type="button" onClick={openChat}>
-                                Tell us what you need
+                                Start a chat
                             </button>
-                            <a className="hero__secondary" href="#projects">Browse sample places</a>
+                            <a className="hero__secondary" href="#projects">Explore sample projects</a>
                         </div>
                     </motion.div>
 
                     <motion.figure
                         className="hero__visual"
-                        style={{
-                            y: reduceMotion ? 0 : heroY,
-                            rotateX: reduceMotion ? 0 : heroRotateX,
-                            rotateY: reduceMotion ? 0 : heroRotateY,
-                        }}
+                        initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.75, delay: 0.12, ease: "easeOut" }}
                     >
-                        <div className="hero__depth" aria-hidden="true" />
                         <div className="hero__image-frame">
-                            <motion.img
+                            <img
                                 src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1600&q=85"
                                 alt="Warm, neutral-toned living room"
                                 fetchPriority="high"
-                                style={{ scale: reduceMotion ? 1 : heroScale }}
+                                decoding="async"
                             />
+                            <span className="hero__image-index">
+                                {projectsStatus === "ready" ? `${projects.length} sample projects` : "Projects via API"}
+                            </span>
                         </div>
-                        <button
-                            className="hero__chat-preview"
-                            type="button"
-                            onClick={openChat}
-                            aria-label="Start a chat about your property search"
-                        >
-                            <span className="hero__chat-preview-top">
-                                <span className="hero__chat-preview-dot" />
-                                Property Desk · chat
-                            </span>
-                            <span className="hero__chat-preview-question">What are you hoping to find?</span>
-                            <span className="hero__chat-preview-answer">
-                                Tell me a little. I’ll ask one thing at a time.
-                            </span>
-                            <span className="hero__chat-preview-action">Start a conversation</span>
-                        </button>
                         <figcaption>
-                            <span>Homes, workspaces, and the details between</span>
-                            <span>01 — 04</span>
+                            <span>Illustrative home</span>
+                            <span>Gurugram, India</span>
                         </figcaption>
                     </motion.figure>
 
-                    <motion.div
-                        className="hero__footnote"
-                        initial={reduceMotion ? false : { opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.8, delay: 0.35 }}
-                    >
-                        <span>Illustrative listings · Gurugram, India</span>
-                    </motion.div>
+                    <div className="hero__footnote">
+                        <span>Residential and commercial property</span>
+                        <span>Start anywhere. We’ll ask what matters next.</span>
+                    </div>
                 </motion.section>
 
                 <section className="projects-section" id="projects" aria-labelledby="projects-title">
@@ -244,61 +242,150 @@ export function App() {
                             transition={{ duration: 0.55, ease: "easeOut" }}
                         >
                             <div>
-                                <p className="eyebrow">Sample projects</p>
-                                <h2 id="projects-title">Pick a place to ask about.</h2>
+                                <h2 id="projects-title">Explore a few places first.</h2>
                             </div>
                             <p>
-                                Choose a project to discuss, or tell Property Desk what you’re looking for. It can compare
-                                locations, layouts, prices, and timelines.
+                                Browse six property types. The gallery and assistant search use the same API catalogue.
                             </p>
                         </motion.div>
 
+                        <div className="project-controls">
+                            <label className="project-search">
+                                <span>Find a project</span>
+                                <input
+                                    type="search"
+                                    value={projectQuery}
+                                    onChange={(event) => {
+                                        setProjectQuery(event.target.value);
+                                        setVisibleProjectCount(8);
+                                    }}
+                                    placeholder="Name, area or property type"
+                                />
+                            </label>
+                            <div className="project-filters" aria-label="Filter projects by type">
+                                {PROJECT_CATEGORIES.map((category) => {
+                                    const count =
+                                        category === "All"
+                                            ? projects.length
+                                            : projects.filter((project) => getProjectCategory(project) === category).length;
+                                    return (
+                                        <button
+                                            className="project-filter"
+                                            key={category}
+                                            type="button"
+                                            aria-pressed={activeProjectCategory === category}
+                                            onClick={() => {
+                                                setActiveProjectCategory(category);
+                                                setVisibleProjectCount(8);
+                                            }}
+                                        >
+                                            {category} <span>{count}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {projectsStatus === "loading" && (
+                            <p className="project-feedback" role="status">Loading sample projects from the API…</p>
+                        )}
+                        {projectsStatus === "error" && (
+                            <div className="project-feedback project-feedback--error" role="alert">
+                                <p>Couldn’t load projects from the API. Check that the backend is running, then retry.</p>
+                                <button className="text-button" type="button" onClick={retryProjects}>Retry</button>
+                            </div>
+                        )}
+
+                        {projectsStatus === "ready" && (() => {
+                            const query = projectQuery.trim().toLowerCase();
+                            const filteredProjects = projects.filter((project) => {
+                                if (activeProjectCategory !== "All" && getProjectCategory(project) !== activeProjectCategory) return false;
+                                if (!query) return true;
+                                const searchable = [
+                                    project.name,
+                                    project.location.localityName,
+                                    project.location.city,
+                                    ...project.propertyTypes,
+                                    project.status,
+                                    ...project.configurations.map((configuration) => configuration.label),
+                                ]
+                                    .filter(Boolean)
+                                    .join(" ")
+                                    .toLowerCase();
+                                return searchable.includes(query);
+                            });
+                            const visibleProjects = filteredProjects.slice(0, visibleProjectCount);
+
+                            return (
+                                <>
+                                    <p className="project-result-count" aria-live="polite">
+                                        {filteredProjects.length} {filteredProjects.length === 1 ? "project" : "projects"}
+                                    </p>
+                                    {filteredProjects.length === 0 ? (
+                                        <p className="project-feedback">No projects match that search. Try another name, area or type.</p>
+                                    ) : (
                         <div className="project-grid">
-                            {DEMO_PROJECTS.map((project, index) => (
+                            {visibleProjects.map((project, index) => (
                                 <motion.article
                                     className="project"
                                     key={project.id}
                                     initial={reduceMotion ? false : { opacity: 0, y: 26, rotateX: -4 }}
                                     whileInView={reduceMotion ? undefined : { opacity: 1, y: 0, rotateX: 0 }}
-                                    whileHover={reduceMotion ? undefined : { y: -4, rotateY: 1.2 }}
                                     viewport={{ once: true, amount: 0.2 }}
-                                    transition={{ duration: 0.55, delay: index * 0.07, ease: "easeOut" }}
+                                    transition={{ duration: 0.55, delay: Math.min(index, 5) * 0.07, ease: "easeOut" }}
                                 >
                                     <div className="project__image-wrap">
-                                        <img
-                                            src={project.image}
-                                            alt={project.imageAlt}
-                                            loading="lazy"
-                                            decoding="async"
-                                        />
-                                        <span className="project__number">0{index + 1}</span>
-                                        <span className="project__status">{project.status}</span>
+                                        {project.image?.url && (
+                                            <img
+                                                src={project.image.url}
+                                                alt={project.image.alt}
+                                                loading="lazy"
+                                                decoding="async"
+                                            />
+                                        )}
+                                        <span className="project__number">{String(index + 1).padStart(2, "0")}</span>
+                                        <span className="project__status">{project.status ?? "Sample listing"}</span>
                                     </div>
                                     <div className="project__body">
-                                        <p className="project__type">{project.type} <span>·</span> {project.location}</p>
+                                        <p className="project__type">
+                                            {getProjectCategory(project)} <span>·</span>{" "}
+                                            {[project.location.localityName, project.location.city].filter(Boolean).join(", ")}
+                                        </p>
                                         <div className="project__title-row">
                                             <h3>{project.name}</h3>
-                                            <p>{project.price}</p>
+                                            <p>{projectPrice(project)}</p>
                                         </div>
                                         <div className="project__footer">
-                                            <span>{project.details}</span>
+                                            <span>{project.configurations.map((configuration) => configuration.label).join(" · ")}</span>
                                             <button
                                                 className="text-button"
                                                 type="button"
                                                 onClick={() => askAboutProject(project)}
                                                 aria-label={`Ask Property Desk about ${project.name}`}
                                             >
-                                                Ask about this place
+                                                Ask about this project
                                             </button>
                                         </div>
                                     </div>
                                 </motion.article>
                             ))}
                         </div>
+                                    )}
+                                    {visibleProjectCount < filteredProjects.length && (
+                                        <button
+                                            className="button project-load-more"
+                                            type="button"
+                                            onClick={() => setVisibleProjectCount((count) => count + 8)}
+                                        >
+                                            Show more projects
+                                        </button>
+                                    )}
+                                </>
+                            );
+                        })()}
 
                         <p className="projects-note">
-                            All project names, prices, locations, and details are fictional examples. The photos are
-                            illustrative.
+                            Project names, prices, locations, and details are fictional. Photos are illustrative. The assistant searches this same API catalogue.
                         </p>
                     </div>
                 </section>
@@ -312,11 +399,10 @@ export function App() {
                             viewport={{ once: true, amount: 0.35 }}
                             transition={{ duration: 0.55, ease: "easeOut" }}
                         >
-                            <p className="eyebrow">A guided search</p>
-                            <h2 id="approach-title">No filters. Just tell us what matters.</h2>
+                            <h2 id="approach-title">One useful question at a time.</h2>
                             <p>
-                                Start with a location, your budget, or a rough idea. Property Desk asks one useful
-                                question at a time and keeps your search focused.
+                                Share a location, a budget, or a rough idea. We’ll ask a focused follow-up, then keep
+                                the search moving.
                             </p>
                             <button className="approach__link" type="button" onClick={openChat}>
                                 Start a chat
@@ -331,8 +417,8 @@ export function App() {
                                 transition={{ duration: 0.5, delay: 0.05, ease: "easeOut" }}
                             >
                                 <span className="steps__number">01</span>
-                                <h3>Say what matters</h3>
-                                <p>Budget, commute, room to grow, or simply a neighbourhood you like.</p>
+                                <h3>Share the brief</h3>
+                                <p>Your budget, the area, or a detail that matters to you.</p>
                             </motion.li>
                             <motion.li
                                 initial={reduceMotion ? false : { opacity: 0, y: 18, rotateX: -4 }}
@@ -342,8 +428,8 @@ export function App() {
                                 transition={{ duration: 0.5, delay: 0.14, ease: "easeOut" }}
                             >
                                 <span className="steps__number">02</span>
-                                <h3>Compare the details</h3>
-                                <p>See how layouts, locations, prices, and timelines differ.</p>
+                                <h3>Narrow it down</h3>
+                                <p>Answer a follow-up. Compare layouts, locations, and prices.</p>
                             </motion.li>
                             <motion.li
                                 initial={reduceMotion ? false : { opacity: 0, y: 18, rotateX: -4 }}
@@ -353,8 +439,8 @@ export function App() {
                                 transition={{ duration: 0.5, delay: 0.23, ease: "easeOut" }}
                             >
                                 <span className="steps__number">03</span>
-                                <h3>Take your time</h3>
-                                <p>Ask a follow-up, request a callback, or come back when you’re ready.</p>
+                                <h3>Choose a next step</h3>
+                                <p>Keep exploring, arrange a visit, or ask for a callback.</p>
                             </motion.li>
                         </ol>
                     </div>
@@ -370,7 +456,7 @@ export function App() {
                         </svg>
                         <span>Property Desk</span>
                     </a>
-                    <p>Fictional demo company and listings. Photography from Unsplash; images are illustrative.</p>
+                    <p>Fictional demo company and listings. Unsplash photography is illustrative.</p>
                 </div>
             </footer>
 
