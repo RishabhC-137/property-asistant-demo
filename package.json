@@ -1,0 +1,23 @@
+{
+  "name": "property-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@property-assistant/api",
+    "dev:api": "npm run dev --workspace=@property-assistant/api",
+    "build": "npm run build --workspace=@property-assistant/chat-ui && npm run build --workspace=@property-assistant/api && npm run build --workspace=@property-assistant/web",
+    "start": "npm run start --workspace=@property-assistant/api",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspace=@property-assistant/llm && npm run test --workspace=@property-assistant/api && npm run test --workspace=@property-assistant/chat-ui",
+    "db:migrate": "npm run db:migrate --workspace=@property-assistant/api",
+    "dev:web": "npm run dev --workspace=@property-assistant/web",
+    "build:embed": "npm run build:embed --workspace=@property-assistant/web"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

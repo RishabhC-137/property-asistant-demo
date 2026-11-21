@@ -1,0 +1,378 @@
+/* Launcher and panel for the website widget. Lives in the widget's shadow root. */
+
+.gs-root {
+    --gs-navy: #0c194f;
+    --gs-orange: #ff9500;
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 900;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    font-family: var(--font-poppins), "Poppins", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* An open chat sits above the page's own floating widgets (video players, banners). */
+.gs-root--chat-open {
+    z-index: 2147483000;
+}
+
+.gs-root--left {
+    right: auto;
+    left: 24px;
+    align-items: flex-start;
+}
+
+/* A round launcher: a soft pulse and a bobbing chat bubble invite a tap; the label slides out on hover. */
+.gs-launcher {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 62px;
+    height: 62px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 25%, #24357a, var(--gs-navy) 70%);
+    color: #fff;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 10px 30px rgb(12 25 79 / 0.35);
+    cursor: pointer;
+    /* Touch drags move the launcher instead of scrolling the page. */
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+/* While dragged: no hover lift, label or ripples, and a grabbing hand. */
+.gs-root--dragging .gs-launcher {
+    cursor: grabbing;
+    transform: scale(1.08);
+    transition: none;
+}
+
+.gs-root--dragging .gs-launcher::before,
+.gs-root--dragging .gs-launcher::after,
+.gs-root--dragging .gs-launcher__icon {
+    animation: none;
+}
+
+.gs-root--dragging .gs-launcher .gs-launcher__label {
+    opacity: 0;
+}
+
+/* Two rings ripple out from the button, one after the other. */
+.gs-launcher::before,
+.gs-launcher::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--gs-navy);
+    opacity: 0;
+    pointer-events: none;
+    animation: gs-ripple 2.8s ease-out infinite;
+}
+
+.gs-launcher::after {
+    border-color: var(--gs-orange);
+    animation-delay: 1.4s;
+}
+
+.gs-launcher:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 14px 34px rgb(12 25 79 / 0.42);
+}
+
+.gs-launcher:focus-visible {
+    outline: 3px solid var(--gs-orange);
+    outline-offset: 3px;
+}
+
+.gs-launcher svg {
+    flex-shrink: 0;
+}
+
+.gs-launcher__icon {
+    display: grid;
+    place-items: center;
+    animation: gs-bob 3s ease-in-out infinite;
+}
+
+/* Small "online" dot in the brand orange. */
+.gs-launcher__dot {
+    position: absolute;
+    top: 13px;
+    right: 13px;
+    width: 11px;
+    height: 11px;
+    border: 2px solid var(--gs-navy);
+    border-radius: 50%;
+    background: var(--gs-orange);
+    animation: gs-blink 2s ease-in-out infinite;
+}
+
+/* The label, as a pill that slides out beside the button on hover or keyboard focus. */
+.gs-launcher__label {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 12px);
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--gs-navy);
+    font-size: 14px;
+    white-space: nowrap;
+    box-shadow: 0 8px 22px rgb(12 25 79 / 0.18);
+    opacity: 0;
+    transform: translate(8px, -50%);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    pointer-events: none;
+}
+
+.gs-root--left .gs-launcher__label {
+    right: auto;
+    left: calc(100% + 12px);
+    transform: translate(-8px, -50%);
+}
+
+.gs-launcher:hover .gs-launcher__label,
+.gs-launcher:focus-visible .gs-launcher__label {
+    opacity: 1;
+    transform: translate(0, -50%);
+}
+
+/* Open: a plain close button, without the invitation. */
+.gs-launcher--open::before,
+.gs-launcher--open::after {
+    animation: none;
+}
+
+@keyframes gs-ripple {
+    0% {
+        transform: scale(1);
+        opacity: 0.55;
+    }
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}
+
+@keyframes gs-bob {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0);
+    }
+    20% {
+        transform: translateY(-3px) rotate(-8deg);
+    }
+    35% {
+        transform: translateY(0) rotate(6deg);
+    }
+    50% {
+        transform: translateY(0) rotate(0);
+    }
+}
+
+@keyframes gs-blink {
+    50% {
+        transform: scale(0.8);
+        opacity: 0.7;
+    }
+}
+
+.gs-panel {
+    width: min(420px, calc(100vw - 32px));
+    height: min(680px, calc(100dvh - 120px));
+    min-height: 0;
+    overflow: hidden;
+    overscroll-behavior: contain;
+    border-radius: 18px;
+    box-shadow: 0 24px 60px rgb(12 25 79 / 0.28);
+    animation: gs-rise 0.22s ease-out;
+}
+
+.gs-panel[hidden] {
+    display: none;
+}
+
+.gs-panel .rec-chat {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0;
+}
+
+/* Once per visit, a short hello next to the launcher. */
+.gs-teaser {
+    position: relative;
+    max-width: 260px;
+    padding: 12px 34px 12px 14px;
+    border-radius: 14px 14px 4px 14px;
+    background: #fff;
+    color: #121212;
+    font-size: 14px;
+    line-height: 1.45;
+    box-shadow: 0 10px 28px rgb(12 25 79 / 0.18);
+    border-left: 3px solid var(--gs-orange);
+    cursor: pointer;
+    animation: gs-rise 0.25s ease-out;
+}
+
+.gs-teaser strong {
+    color: var(--gs-navy);
+}
+
+.gs-teaser__close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #6b6f80;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.gs-teaser__close:hover {
+    background: #f3f1e6;
+}
+
+@keyframes gs-rise {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .gs-panel,
+    .gs-teaser,
+    .gs-launcher,
+    .gs-launcher::before,
+    .gs-launcher::after,
+    .gs-launcher__icon,
+    .gs-launcher__dot {
+        animation: none;
+        transition: none;
+    }
+}
+
+/* Phones: the chat takes the whole screen; the launcher becomes a round button. */
+@media (max-width: 520px) {
+    .gs-root {
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .gs-launcher {
+        width: 56px;
+        height: 56px;
+    }
+
+    .gs-launcher__label {
+        display: none;
+    }
+
+    .gs-launcher__dot {
+        top: 11px;
+        right: 11px;
+    }
+
+    .gs-panel {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+    }
+
+    .gs-root--chat-open .gs-launcher {
+        display: none;
+    }
+}
+/* "Ask Property Desk about this": floats over text the visitor selected on the page. */
+.gs-ask-selection {
+    position: fixed;
+    z-index: 2147483001;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transform: translateX(-50%);
+    min-height: 34px;
+    padding: 6px 13px 6px 9px;
+    border: 0;
+    border-radius: 999px;
+    background: #0c194f;
+    color: #ffffff;
+    font: 600 13px/1.2 var(--font-poppins), "Poppins", system-ui, -apple-system, sans-serif;
+    white-space: nowrap;
+    box-shadow: 0 6px 20px rgb(12 25 79 / 28%);
+    cursor: pointer;
+    animation: gs-ask-in 0.14s ease-out;
+}
+
+.gs-ask-selection::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -5px;
+    width: 10px;
+    height: 10px;
+    background: inherit;
+    transform: translateX(-50%) rotate(45deg);
+    border-radius: 2px;
+}
+
+.gs-ask-selection--below::after {
+    top: -5px;
+    bottom: auto;
+}
+
+.gs-ask-selection:hover {
+    background: #16276e;
+}
+
+.gs-ask-selection:focus-visible {
+    outline: 2px solid #ff9500;
+    outline-offset: 2px;
+}
+
+.gs-ask-selection__icon {
+    display: grid;
+    place-items: center;
+    color: #ff9500;
+}
+
+.gs-ask-selection__icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+@keyframes gs-ask-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 4px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gs-ask-selection {
+        animation: none;
+    }
+}

@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "skills": {
+    "harness-engineering": {
+      "source": "github/awesome-copilot",
+      "commit": "1683f50e94c9fd489191f73d7c8f7e2bd871bd0c",
+      "sourceType": "github",
+      "skillPath": "skills/harness-engineering/SKILL.md",
+      "computedHash": "e6d95c6e1681a71ab3a91df0d48a1c26a0239b54cc083747a391898b1b949e89"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "commit": "2de1134dc4d1cfe112934611ae5803ae17a1bd7e",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
+      "computedHash": "605686282fb6812d8e3f4b1a06c9fb8ba7be4d7395090f41f221a9ba5a3dbe6b"
+    }
+  }
+}

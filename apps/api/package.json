@@ -1,0 +1,37 @@
+{
+  "name": "@property-assistant/api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:deps": "npm run build --workspace=@property-assistant/contracts && npm run build --workspace=@property-assistant/llm",
+    "predev": "npm run build:deps",
+    "dev": "tsx watch --env-file-if-exists=../../.env src/server.ts",
+    "prebuild": "npm run build:deps",
+    "build": "tsc -p tsconfig.json",
+    "start": "node --env-file-if-exists=../../.env dist/server.js",
+    "typecheck": "npm run build:deps && tsc --noEmit -p tsconfig.json && tsc -p tsconfig.test.json",
+    "db:migrate": "tsx --env-file-if-exists=../../.env src/db/migrate.ts",
+    "db:test:setup": "node --env-file=.env.test --import tsx test/setup-test-db.ts",
+    "pretest": "npm run build:deps && npm run db:test:setup",
+    "test": "node --env-file=.env.test --import tsx --test --test-concurrency=1 \"test/**/*.test.ts\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@property-assistant/contracts": "0.1.0",
+    "@property-assistant/llm": "0.1.0",
+    "fastify": "^5.12.7",
+    "pg": "^8.23.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

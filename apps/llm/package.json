@@ -1,0 +1,35 @@
+{
+  "name": "@property-assistant/llm",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Chat providers (mock and Google Gemini): prompts, tools and the provider interface the API consumes.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build:deps": "npm run build --workspace=@property-assistant/contracts",
+    "prebuild": "npm run build:deps",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "npm run build:deps && tsc --noEmit -p tsconfig.json && tsc -p tsconfig.test.json",
+    "pretest": "npm run build:deps",
+    "test": "node --import tsx --test \"test/**/*.test.ts\""
+  },
+  "dependencies": {
+    "@google/genai": "^2.30.0",
+    "@property-assistant/contracts": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}

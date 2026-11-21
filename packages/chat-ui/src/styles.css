@@ -1,0 +1,4232 @@
+/*
+ * chat-ui styles. Everything is scoped under .rec-chat and every colour /
+ * radius / font comes from --rec-* variables set by the `theme` prop.
+ */
+
+.rec-chat {
+    /* Fallbacks if the widget is rendered without the theme variables. */
+    --rec-gap: 12px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 420px;
+    overflow: hidden;
+    font-family: var(--rec-font-family, system-ui, sans-serif);
+    font-size: var(--rec-font-size, 15px);
+    line-height: 1.5;
+    color: var(--rec-color-text, #1e2420);
+    background:
+        radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--rec-color-primary) 5%, transparent), transparent 29%),
+        var(--rec-color-background, #fff);
+    border: 1px solid var(--rec-color-border, #e1e4e0);
+    border-radius: var(--rec-radius, 16px);
+    box-shadow: var(--rec-shadow, none);
+    box-sizing: border-box;
+}
+
+.rec-chat *,
+.rec-chat *::before,
+.rec-chat *::after {
+    box-sizing: border-box;
+}
+
+.rec-chat h2,
+.rec-chat h3,
+.rec-chat h4,
+.rec-chat p,
+.rec-chat ul {
+    margin: 0;
+}
+
+.rec-chat ul {
+    padding: 0;
+    list-style: none;
+}
+
+.rec-chat button {
+    font: inherit;
+    cursor: pointer;
+}
+
+.rec-chat button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.rec-chat :focus-visible {
+    outline: 2px solid var(--rec-color-focus);
+    outline-offset: 2px;
+}
+
+.rec-icon {
+    flex-shrink: 0;
+    vertical-align: -0.15em;
+}
+
+.rec-muted {
+    color: var(--rec-color-text-muted);
+}
+
+.rec-small {
+    font-size: 0.86em;
+}
+
+.rec-danger {
+    color: var(--rec-color-danger);
+}
+
+.rec-center {
+    text-align: center;
+}
+
+.rec-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- header */
+
+.rec-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 14px;
+    background:
+        radial-gradient(circle at 92% -90%, color-mix(in srgb, var(--rec-color-on-primary) 20%, transparent), transparent 56%),
+        linear-gradient(125deg, var(--rec-color-primary), color-mix(in srgb, var(--rec-color-primary) 82%, #000));
+    color: var(--rec-color-on-primary);
+}
+
+.rec-header__avatar {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--rec-color-on-primary) 18%, transparent);
+}
+
+.rec-header__logo {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    padding: 5px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.rec-header__titles {
+    flex: 1;
+    min-width: 0;
+}
+
+.rec-header__name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.rec-header__name h2 {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-header__meta {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+
+.rec-header h2 {
+    font-size: 1.02em;
+    font-weight: 650;
+}
+
+.rec-header p {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.82em;
+    opacity: 0.85;
+}
+
+.rec-header__actions {
+    display: flex;
+    gap: 4px;
+}
+
+.rec-icon-button {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: var(--rec-radius-small);
+    background: transparent;
+    color: inherit;
+}
+
+.rec-icon-button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--rec-color-on-primary) 16%, transparent);
+}
+
+/* ---------------------------------------------------------------- messages */
+
+.rec-messages {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--rec-gap);
+    padding: 18px 14px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.rec-load-older {
+    align-self: center;
+}
+
+.rec-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 100%;
+}
+
+.rec-row--user {
+    align-items: flex-end;
+}
+
+.rec-row--assistant {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.rec-avatar {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--rec-color-surface-muted);
+    color: var(--rec-color-primary);
+}
+
+.rec-assistant {
+    display: flex;
+    flex-direction: column;
+    /* Bubbles fit their content (three dots, a short line) and grow with it up to their max width. */
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+}
+
+.rec-bubble {
+    max-width: min(560px, 100%);
+    padding: 10px 13px;
+    border-radius: var(--rec-radius);
+    overflow-wrap: anywhere;
+}
+
+.rec-bubble--user {
+    max-width: min(440px, 85%);
+    background: var(--rec-color-user-bubble);
+    color: var(--rec-color-on-user-bubble);
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--rec-color-user-bubble) 20%, transparent);
+}
+
+.rec-status--sending .rec-bubble--user {
+    opacity: 0.75;
+}
+
+/* Cards need room: a reply holding them may use the full chat width… */
+.rec-bubble--assistant:has(.rec-carousel) {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Forms and tables read best at a steady width rather than shrinking to their content. */
+.rec-bubble--assistant:has(.rec-form) {
+    width: min(440px, 100%);
+}
+
+.rec-bubble--assistant:has(.rec-table-wrap) {
+    width: min(560px, 100%);
+}
+
+/* …but a single card keeps the reply about one card wide instead of leaving empty space. */
+.rec-bubble--assistant:has(.rec-cards[data-count="1"]) {
+    width: min(400px, 100%);
+}
+
+.rec-bubble--assistant {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--rec-color-assistant-bubble);
+    color: var(--rec-color-on-assistant-bubble);
+    border-top-left-radius: 4px;
+    box-shadow: 0 2px 9px rgb(12 25 79 / 0.05);
+}
+
+/* The cursor follows the last line, inside the last paragraph or list item. */
+.rec-text--typing > p:last-child::after,
+.rec-text--typing > :is(ul, ol):last-child > li:last-child::after,
+.rec-bubble--streaming > .rec-text:last-child > p:last-child::after,
+.rec-bubble--streaming > .rec-text:last-child > :is(ul, ol):last-child > li:last-child::after {
+    content: "▍";
+    margin-left: 1px;
+    animation: rec-blink 1s steps(1) infinite;
+}
+
+.rec-text {
+    white-space: pre-wrap;
+}
+
+.rec-text--rich {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.rec-text--rich > * + * {
+    margin-top: 6px;
+}
+
+.rec-chat .rec-text--rich ul,
+.rec-chat .rec-text--rich ol {
+    padding-left: 1.25em;
+}
+
+.rec-chat .rec-text--rich ul {
+    list-style: disc;
+}
+
+.rec-chat .rec-text--rich ol {
+    list-style: decimal;
+}
+
+.rec-text--rich li + li {
+    margin-top: 2px;
+}
+
+.rec-text--rich strong {
+    font-weight: 650;
+}
+
+/* Assistant replies sit next to dense cards, so their text is a step smaller. */
+.rec-bubble--assistant .rec-text {
+    font-size: 0.9em;
+    line-height: 1.45;
+}
+
+.rec-meta {
+    font-size: 0.75em;
+    color: var(--rec-color-text-muted);
+    padding: 0 4px;
+}
+
+.rec-waiting {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Under the reply while it is prepared: "Searching projects…" (the dots in the bubble are the loader). */
+.rec-activity {
+    min-height: 1.4em;
+    padding: 0 4px;
+    font-size: 0.75em;
+    line-height: 1.4;
+}
+
+.rec-activity:empty {
+    display: none;
+}
+
+.rec-activity__label {
+    display: inline-block;
+    color: var(--rec-color-text-muted);
+    animation: rec-fade-in 0.25s ease-out;
+}
+
+@keyframes rec-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+}
+
+
+.rec-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.rec-typing {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px 0;
+}
+
+.rec-typing span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--rec-color-text-muted);
+    animation: rec-bounce 1.2s infinite ease-in-out;
+}
+
+/* The dots take the text colour inside buttons (white on a primary button). */
+.rec-button .rec-typing span,
+.rec-load-older .rec-typing span {
+    background: currentColor;
+}
+
+/* Dots with a label: loading a conversation, the history list, a location. */
+.rec-loader {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--rec-color-text-muted);
+    font-size: 0.86em;
+}
+
+.rec-loader--center {
+    align-self: center;
+    justify-content: center;
+    width: 100%;
+    padding: 16px 0;
+}
+
+.rec-typing span:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.rec-typing span:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.rec-error {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    max-width: min(560px, 100%);
+}
+
+.rec-row--user .rec-error {
+    align-items: flex-end;
+}
+
+/* ---------------------------------------------------------------- welcome */
+
+.rec-welcome {
+    margin: auto 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 30px 12px;
+    text-align: center;
+    color: var(--rec-color-text-muted);
+}
+
+.rec-welcome__icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 18px;
+    background: linear-gradient(145deg, color-mix(in srgb, var(--rec-color-primary) 15%, var(--rec-color-surface)), var(--rec-color-surface-muted));
+    color: var(--rec-color-primary);
+    box-shadow: 0 8px 18px color-mix(in srgb, var(--rec-color-primary) 12%, transparent);
+}
+
+.rec-welcome__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-width: 390px;
+}
+
+.rec-welcome__copy p {
+    color: var(--rec-color-text);
+    font-size: 0.96em;
+    line-height: 1.55;
+}
+
+.rec-welcome__eyebrow {
+    color: var(--rec-color-primary);
+    font-size: 0.67em;
+    font-weight: 750;
+    letter-spacing: 0.1em;
+}
+
+/* Guided first questions: one at a time, a tap each. */
+.rec-starter {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(380px, 100%);
+    padding: 12px 12px 10px;
+    border: 1px solid var(--rec-color-border);
+    border-radius: var(--rec-radius);
+    background: var(--rec-color-surface);
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--rec-color-primary) 8%, transparent);
+    animation: rec-fade-in 0.25s ease-out;
+}
+
+.rec-starter__top {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 4px 8px;
+    text-align: left;
+}
+
+.rec-starter__count {
+    color: var(--rec-color-text-muted);
+    font-size: 0.72em;
+    font-weight: 650;
+}
+
+.rec-starter__question {
+    color: var(--rec-color-text);
+    font-size: 0.95em;
+    font-weight: 650;
+}
+
+.rec-starter__progress {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 4px;
+}
+
+.rec-starter__progress i {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--rec-color-border);
+    transition: background 0.2s ease;
+}
+
+.rec-starter__progress i.is-done {
+    background: var(--rec-color-primary);
+}
+
+.rec-starter .rec-chip[aria-pressed="true"] {
+    background: var(--rec-color-primary);
+    border-color: var(--rec-color-primary);
+    color: var(--rec-color-on-primary);
+}
+
+.rec-starter__footer {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 30px;
+    font-size: 0.82em;
+}
+
+.rec-starter__footer .rec-link-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.rec-starter .rec-starter__go {
+    margin-left: auto;
+    padding: 5px 12px;
+}
+
+/* Any number of bedrooms: − 6 BHK + [Use 6 BHK] */
+.rec-starter__stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding-top: 2px;
+}
+
+.rec-starter__step-btn {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--rec-color-primary) 45%, var(--rec-color-border));
+    border-radius: 50%;
+    background: var(--rec-color-surface);
+    color: var(--rec-color-primary);
+    font-size: 1.05em;
+    font-weight: 650;
+    line-height: 1;
+}
+
+.rec-starter__step-btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--rec-color-primary) 10%, var(--rec-color-surface));
+}
+
+.rec-starter__step-btn:disabled {
+    opacity: 0.4;
+}
+
+.rec-starter__step-value {
+    min-width: 58px;
+    color: var(--rec-color-text);
+    font-size: 0.9em;
+    font-weight: 650;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.rec-starter .rec-starter__step-use {
+    margin-left: 4px;
+    padding: 5px 12px;
+    border-color: var(--rec-color-primary);
+    background: transparent;
+    color: var(--rec-color-primary);
+    font-size: 0.82em;
+}
+
+.rec-welcome__quick .rec-chip {
+    font-size: 0.82em;
+}
+
+/* Idle motion: strokes that draw themselves, a breathing avatar. */
+.rec-welcome {
+    position: relative;
+}
+
+.rec-scribbles {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    width: min(320px, 90%);
+    transform: translateX(-50%);
+    color: color-mix(in srgb, var(--rec-color-primary) 13%, transparent);
+    pointer-events: none;
+}
+
+.rec-scribbles__line {
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 900;
+    stroke-dashoffset: 900;
+    animation: rec-draw 9s ease-in-out infinite;
+}
+
+.rec-scribbles__line--2 {
+    animation-delay: 1.2s;
+}
+
+.rec-scribbles__line--3 {
+    color: var(--rec-color-focus);
+    stroke: color-mix(in srgb, var(--rec-color-focus) 60%, transparent);
+    animation-delay: 2.4s;
+}
+
+.rec-welcome > :not(.rec-scribbles) {
+    position: relative;
+}
+
+.rec-ai-avatar {
+    animation: rec-breathe 3.2s ease-in-out infinite;
+}
+
+.rec-welcome__icon.rec-ai-avatar {
+    animation: rec-float 4s ease-in-out infinite;
+}
+
+.rec-avatar.rec-ai-avatar {
+    animation: none;
+}
+
+.rec-avatar.is-thinking {
+    animation: rec-think 1.4s ease-in-out infinite;
+}
+
+@keyframes rec-draw {
+    0% {
+        stroke-dashoffset: 900;
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    55%,
+    80% {
+        stroke-dashoffset: 0;
+        opacity: 1;
+    }
+    100% {
+        stroke-dashoffset: 0;
+        opacity: 0;
+    }
+}
+
+@keyframes rec-float {
+    50% {
+        transform: translateY(-5px) rotate(-3deg);
+    }
+}
+
+@keyframes rec-breathe {
+    50% {
+        box-shadow: 0 0 0 5px color-mix(in srgb, var(--rec-color-on-primary) 14%, transparent);
+    }
+}
+
+@keyframes rec-think {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--rec-color-primary) 35%, transparent);
+    }
+    50% {
+        box-shadow: 0 0 0 5px color-mix(in srgb, var(--rec-color-primary) 0%, transparent);
+        transform: scale(1.06);
+    }
+}
+
+/* ---------------------------------------------------------------- chat history */
+
+/* Chat history: a drawer over the left half; the chat stays visible, dimmed, on the right. */
+.rec-history-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    background: rgb(12 25 79 / 0.28);
+    animation: rec-fade-in 0.2s ease-out;
+}
+
+.rec-history {
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: 6;
+    width: max(50%, 230px);
+    max-width: 100%;
+    border-right: 1px solid var(--rec-color-border);
+    box-shadow: 12px 0 30px rgb(12 25 79 / 0.18);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    background: var(--rec-color-background);
+    animation: rec-slide-in 0.2s ease-out;
+}
+
+.rec-history__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.rec-history__top h3 {
+    font-size: 1.02em;
+    font-weight: 650;
+}
+
+.rec-history__top .rec-icon-button:hover:not(:disabled) {
+    background: var(--rec-color-surface-muted);
+}
+
+.rec-history .rec-history__new {
+    justify-content: center;
+    padding: 9px 14px;
+}
+
+/* Full width at the foot of the sidebar; the list above scrolls. */
+.rec-history__call {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 14px;
+    border-radius: var(--rec-radius-small);
+    background: #1f9d55;
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgb(31 157 85 / 0.3);
+}
+
+.rec-history__call:hover {
+    background: #188246;
+}
+
+.rec-history__call:focus-visible {
+    outline: 2px solid var(--rec-color-focus);
+    outline-offset: 2px;
+}
+
+.rec-history__list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.rec-history__group {
+    margin: 12px 4px 4px;
+    color: var(--rec-color-text-muted);
+    font-size: 0.72em;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.rec-history__item {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: var(--rec-radius-small);
+    background: transparent;
+    color: var(--rec-color-text);
+    text-align: left;
+}
+
+.rec-history__item:hover,
+.rec-history__item[aria-current="true"] {
+    background: var(--rec-color-surface-muted);
+}
+
+.rec-history__item[aria-current="true"] {
+    box-shadow: inset 3px 0 0 var(--rec-color-primary);
+}
+
+.rec-history__title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9em;
+}
+
+.rec-history__time {
+    flex-shrink: 0;
+    color: var(--rec-color-text-muted);
+    font-size: 0.74em;
+}
+
+/* Each chat row: open it, or delete it (the bin shows on hover, focus, and always on touch). */
+.rec-history__row {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.rec-history__row .rec-history__item {
+    padding-right: 36px;
+}
+
+.rec-history__delete {
+    position: absolute;
+    right: 4px;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--rec-radius-small);
+    background: var(--rec-color-surface-muted);
+    color: var(--rec-color-text-muted);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.rec-history__row:hover .rec-history__delete,
+.rec-history__delete:focus-visible {
+    opacity: 1;
+}
+
+.rec-history__row:hover .rec-history__time {
+    visibility: hidden;
+}
+
+.rec-history__delete:hover {
+    color: var(--rec-color-danger);
+    background: var(--rec-color-danger-surface);
+}
+
+@media (hover: none) {
+    .rec-history__delete {
+        opacity: 1;
+        background: transparent;
+    }
+    .rec-history__time {
+        visibility: hidden;
+    }
+}
+
+.rec-history__confirm {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgb(12 25 79 / 0.4);
+    animation: rec-fade-in 0.15s ease-out;
+}
+
+.rec-history__confirm-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: min(340px, 100%);
+    text-align: center;
+    padding: 16px;
+    border: 1px solid var(--rec-color-border);
+    border-radius: var(--rec-radius);
+    background: var(--rec-color-background);
+    box-shadow: 0 12px 30px rgb(12 25 79 / 0.22);
+}
+
+.rec-history__confirm-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--rec-color-danger-surface);
+    color: var(--rec-color-danger);
+}
+
+.rec-history__confirm-card h4 {
+    font-size: 0.98em;
+    font-weight: 650;
+}
+
+.rec-history__confirm-card p {
+    color: var(--rec-color-text-muted);
+    font-size: 0.84em;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.rec-history__confirm-card p strong {
+    color: var(--rec-color-text);
+    font-weight: 600;
+}
+
+.rec-history__confirm-card .rec-history__confirm-error {
+    color: var(--rec-color-danger);
+}
+
+.rec-history__confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.rec-history__confirm-actions .rec-button {
+    border-color: var(--rec-color-border);
+    background: var(--rec-color-surface);
+    color: var(--rec-color-text);
+}
+
+.rec-history__confirm-actions .rec-button--danger {
+    border-color: #c62828;
+    background: #c62828;
+    color: #fff;
+}
+
+.rec-history__confirm-actions .rec-button--danger:hover:not(:disabled) {
+    background: #a91f1f;
+}
+
+@keyframes rec-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(-12px);
+    }
+}
+
+/* ---------------------------------------------------------------- buttons, chips, notices */
+
+.rec-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--rec-radius-small);
+    border: 1px solid transparent;
+    font-weight: 550;
+}
+
+.rec-button--primary {
+    background: linear-gradient(135deg, var(--rec-color-primary), color-mix(in srgb, var(--rec-color-primary) 80%, #000));
+    color: var(--rec-color-on-primary);
+}
+
+.rec-button--ghost {
+    background: transparent;
+    border-color: var(--rec-color-border);
+    color: var(--rec-color-text);
+}
+
+.rec-button--ghost:hover:not(:disabled) {
+    background: var(--rec-color-surface-muted);
+}
+
+.rec-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* Suggestion pills under the latest reply. */
+.rec-pills {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 6px;
+    max-width: min(560px, 100%);
+    margin-top: 2px;
+    animation: rec-fade-in 0.25s ease-out;
+}
+
+.rec-pills .rec-chip {
+    text-align: left;
+    line-height: 1.3;
+}
+
+.rec-chips--center {
+    justify-content: center;
+}
+
+.rec-chip {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--rec-color-primary) 45%, var(--rec-color-border));
+    background: color-mix(in srgb, var(--rec-color-surface) 94%, var(--rec-color-primary));
+    color: var(--rec-color-primary);
+    font-size: 0.9em;
+}
+
+.rec-chip:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--rec-color-primary) 10%, var(--rec-color-surface));
+}
+
+.rec-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: var(--rec-radius-small);
+    font-size: 0.86em;
+    background: var(--rec-color-notice-surface);
+    color: var(--rec-color-notice);
+}
+
+.rec-notice--danger {
+    background: var(--rec-color-danger-surface);
+    color: var(--rec-color-danger);
+}
+
+.rec-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--rec-color-primary);
+    font-weight: 550;
+    text-decoration: none;
+}
+
+.rec-link:hover {
+    text-decoration: underline;
+}
+
+/* ---------------------------------------------------------------- blocks */
+
+.rec-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.rec-block__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.rec-block__header h3 {
+    font-size: 0.98em;
+    font-weight: 650;
+}
+
+.rec-clarification li {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+.rec-clarification li + li {
+    margin-top: 4px;
+}
+
+.rec-clarification .rec-icon {
+    color: var(--rec-color-primary);
+    margin-top: 3px;
+}
+
+/* property cards */
+
+/* Portrait project cards swipe horizontally; the following card peeks in. */
+.rec-carousel {
+    position: relative;
+    container-type: inline-size;
+}
+
+.rec-cards {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    padding: 2px 1px 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+}
+
+.rec-cards::-webkit-scrollbar {
+    display: none;
+}
+
+/* Never squeeze two cards into the panel. Keep every project readable as a
+   portrait card and let the row itself handle horizontal navigation. */
+.rec-cards {
+    --rec-card-width: min(76cqw, 272px);
+    scroll-padding-inline: 1px;
+}
+
+.rec-cards > .rec-card {
+    flex: 0 0 var(--rec-card-width);
+    scroll-snap-align: start;
+}
+
+/* Invisible sentinel at the end of the row; triggers automatic page loading via IntersectionObserver. */
+.rec-sentinel {
+    flex: 0 0 1px;
+    display: grid;
+    place-items: center;
+    scroll-snap-align: end;
+}
+
+.rec-sentinel:has(.rec-typing) {
+    flex-basis: 42px;
+}
+
+/* Retry button shown after a failed auto-load; sits at the end of the row like the sentinel. */
+.rec-sentinel-retry {
+    flex: 0 0 auto;
+    scroll-snap-align: end;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--rec-color-border);
+    border-radius: var(--rec-radius-small);
+    background: var(--rec-color-surface);
+    color: var(--rec-color-text-muted);
+    font: inherit;
+    font-size: 0.8em;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.rec-sentinel-retry:hover {
+    border-color: color-mix(in srgb, var(--rec-color-primary) 45%, var(--rec-color-border));
+    color: var(--rec-color-primary);
+}
+
+.rec-cards[data-count="1"] > .rec-card {
+    flex-basis: var(--rec-card-width);
+}
+
+.rec-block__header-end {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+}
+
+.rec-pager {
+    display: flex;
+    gap: 4px;
+}
+
+.rec-pager__button {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid var(--rec-color-border);
+    border-radius: 6px;
+    background: var(--rec-color-surface);
+    color: var(--rec-color-text);
+}
+
+.rec-pager__button:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--rec-color-primary) 55%, var(--rec-color-border));
+}
+
+/* Dimmed (not hidden) at either end of the row; beats the generic `.rec-chat button:disabled`. */
+.rec-chat .rec-pager__button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.rec-cards:focus-visible {
+    outline: 2px solid var(--rec-color-focus);
+    outline-offset: 2px;
+}
+
+
+/* A taller image frame reinforces the portrait-card layout. */
+.rec-card__media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--rec-color-surface-muted);
+}
+
+.rec-card__media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.rec-card__placeholder {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    color: var(--rec-color-text-muted);
+}
+
+
+.rec-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 0.66em;
+    font-weight: 600;
+    white-space: nowrap;
+    background: var(--rec-color-primary);
+    color: var(--rec-color-on-primary);
+}
+
+/* Tags sit on photos, so they use fixed high-contrast colours rather than theme surfaces. */
+.rec-badge--ready {
+    background: #1f7a47;
+    color: #fff;
+}
+
+.rec-badge--building {
+    background: #b45309;
+    color: #fff;
+}
+
+.rec-badge--date {
+    background: rgb(17 24 20 / 0.72);
+    color: #fff;
+}
+
+/* Photos side by side in the frame, one per view; swipe or scroll to move between them. */
+.rec-card__photos {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+}
+
+.rec-card__photos::-webkit-scrollbar {
+    display: none;
+}
+
+.rec-card__media .rec-card__photos img {
+    position: static;
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+}
+
+.rec-chat .rec-card__photo-nav {
+    position: absolute;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.88);
+    color: #1e2420;
+    opacity: 0;
+    transform: translateY(-50%);
+    transition: opacity 0.15s;
+}
+
+.rec-card__photo-nav--prev {
+    left: 6px;
+}
+
+.rec-card__photo-nav--next {
+    right: 6px;
+}
+
+/* Arrows appear where there is a mouse; touch screens swipe. */
+@media (hover: hover) {
+    .rec-chat .rec-card__media:hover .rec-card__photo-nav:not(:disabled) {
+        opacity: 1;
+    }
+}
+
+.rec-chat .rec-card__photo-nav:focus-visible {
+    opacity: 1;
+}
+
+.rec-chat .rec-card__media .rec-card__photo-nav:disabled {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.rec-card__dots {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    display: flex;
+    gap: 4px;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.rec-card__dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.55);
+    box-shadow: 0 0 2px rgb(0 0 0 / 0.4);
+}
+
+.rec-card__dots span.is-active {
+    background: #fff;
+}
+
+.rec-badge--notice {
+    background: var(--rec-color-notice-surface);
+    color: var(--rec-color-notice);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.rec-card__budget {
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 0.64em;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.rec-card__budget--within {
+    background: color-mix(in srgb, var(--rec-color-primary) 18%, transparent);
+    color: var(--rec-color-primary);
+}
+
+.rec-card__budget--over,
+.rec-card__budget--under {
+    background: var(--rec-color-notice-surface);
+    color: var(--rec-color-notice);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* Wishlisted: a solid red heart; the unsaved look is unchanged. */
+.rec-card__fav[aria-pressed="true"] {
+    color: #e53935;
+}
+
+.rec-card__fav[aria-pressed="true"] svg {
+    fill: currentColor;
+}
+
+.rec-card__fav:disabled {
+    cursor: progress;
+    opacity: 0.75;
+}
+
+.rec-card__fav:focus-visible {
+    outline: 2px solid var(--rec-color-focus);
+    outline-offset: 2px;
+}
+
+
+
+
+
+
+
+/* gallery */
+
+/* About one card wide, like a single-card reply. */
+.rec-bubble--assistant:has(.rec-gallery) {
+    width: min(440px, 100%);
+}
+
+.rec-chat .rec-chip--toggle {
+    padding: 3px 10px;
+    font-size: 0.8em;
+}
+
+.rec-chat .rec-chip--toggle[aria-pressed="true"] {
+    background: var(--rec-color-primary);
+    border-color: var(--rec-color-primary);
+    color: var(--rec-color-on-primary);
+}
+
+.rec-gallery__stage {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.rec-gallery__frame {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: var(--rec-radius-small);
+    border: 1px solid var(--rec-color-border);
+    background: var(--rec-color-surface-muted);
+}
+
+.rec-gallery__frame img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.rec-gallery__frame[data-fit="contain"] img {
+    object-fit: contain;
+    background: var(--rec-color-surface);
+}
+
+.rec-gallery__frame:focus-visible {
+    outline: 2px solid var(--rec-color-focus);
+    outline-offset: 2px;
+}
+
+.rec-gallery__stage figcaption {
+    overflow-wrap: anywhere;
+}
+
+.rec-gallery__thumbs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    padding: 2px;
+}
+
+.rec-gallery__thumbs::-webkit-scrollbar {
+    display: none;
+}
+
+.rec-chat .rec-gallery__thumb {
+    position: relative;
+    flex: 0 0 64px;
+    height: 48px;
+    padding: 0;
+    overflow: hidden;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    background: var(--rec-color-surface-muted);
+    opacity: 0.7;
+}
+
+.rec-chat .rec-gallery__thumb[aria-pressed="true"] {
+    border-color: var(--rec-color-primary);
+    opacity: 1;
+}
+
+.rec-chat .rec-gallery__thumb:hover {
+    opacity: 1;
+}
+
+.rec-gallery__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.rec-gallery__more {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    align-self: flex-start;
+    color: var(--rec-color-primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.rec-gallery__more:hover {
+    text-decoration: underline;
+}
+
+/* map */
+
+.rec-bubble--assistant:has(.rec-map) {
+    width: min(440px, 100%);
+}
+
+.rec-map__frame {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: var(--rec-radius-small);
+    border: 1px solid var(--rec-color-border);
+    background: var(--rec-color-surface-muted);
+}
+
+.rec-map__frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.rec-map__distance {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.rec-map__actions,
+.rec-map__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    align-items: center;
+}
+
+.rec-map__links a,
+.rec-card__map {
+    color: var(--rec-color-primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.rec-map__links a:hover,
+.rec-card__map:hover {
+    text-decoration: underline;
+}
+
+.rec-chat .rec-button--small {
+    padding: 4px 10px;
+    font-size: 0.92em;
+}
+
+/* A button that reads as an inline link. */
+.rec-chat .rec-link-button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--rec-color-primary);
+    font-weight: 600;
+    font-size: inherit;
+}
+
+.rec-chat .rec-link-button:hover {
+    text-decoration: underline;
+}
+
+/* payment plan */
+
+.rec-bubble--assistant:has(.rec-plan) {
+    width: min(520px, 100%);
+}
+
+.rec-plan {
+    container-type: inline-size;
+}
+
+/* Donut beside the numbered stages; stacked when the bubble is narrow. */
+.rec-plan__body {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 16px;
+    align-items: center;
+}
+
+@container (max-width: 400px) {
+    .rec-plan__body {
+        grid-template-columns: 1fr;
+        justify-items: center;
+    }
+}
+
+.rec-plan__chart {
+    position: relative;
+    width: 150px;
+    aspect-ratio: 1;
+}
+
+.rec-plan__chart svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.rec-plan__track {
+    fill: none;
+    stroke: var(--rec-color-surface-muted);
+}
+
+.rec-plan__slice {
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.rec-plan__slice path {
+    fill: var(--rec-plan-fill);
+    /* A thin gap in the bubble's colour keeps neighbouring shades apart. */
+    stroke: var(--rec-color-assistant-bubble);
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+}
+
+.rec-plan__slice text {
+    fill: var(--rec-plan-ink);
+    font-size: 9px;
+    font-weight: 700;
+    pointer-events: none;
+}
+
+.rec-plan__slice.is-dimmed {
+    opacity: 0.35;
+}
+
+.rec-plan__center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    text-align: center;
+    line-height: 1.15;
+}
+
+.rec-plan__center strong {
+    font-size: 1.35em;
+    font-variant-numeric: tabular-nums;
+}
+
+.rec-plan__center span {
+    max-width: 70px;
+    font-size: 0.72em;
+    color: var(--rec-color-text-muted);
+}
+
+.rec-plan__stages {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.rec-plan__stage {
+    display: grid;
+    grid-template-columns: 20px 3.2em 1fr;
+    gap: 8px;
+    align-items: baseline;
+    padding: 4px 6px;
+    border-radius: var(--rec-radius-small);
+    font-size: 0.84em;
+    line-height: 1.35;
+    transition: background-color 0.15s ease;
+}
+
+.rec-plan__stage.is-active {
+    background: color-mix(in srgb, var(--rec-color-primary) 12%, transparent);
+}
+
+.rec-plan__stage:focus-visible {
+    outline: 2px solid var(--rec-color-focus);
+    outline-offset: -2px;
+}
+
+/* The stage's number on its slice colour, matching the donut. */
+.rec-plan__key {
+    display: inline-grid;
+    place-items: center;
+    align-self: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--rec-plan-fill);
+    color: var(--rec-plan-ink);
+    font-size: 0.78em;
+    font-weight: 700;
+}
+
+.rec-plan__percent {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.rec-plan__label {
+    overflow-wrap: anywhere;
+}
+
+/* comparison */
+
+.rec-table-wrap {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--rec-color-border);
+    border-radius: var(--rec-radius-small);
+    background: var(--rec-color-surface);
+}
+
+.rec-table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 0.86em;
+}
+
+.rec-table th,
+.rec-table td {
+    overflow-wrap: anywhere;
+    padding: 7px 10px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--rec-color-border);
+}
+
+.rec-table thead th {
+    font-weight: 650;
+    background: var(--rec-color-surface-muted);
+}
+
+.rec-table tbody th {
+    font-weight: 550;
+    color: var(--rec-color-text-muted);
+    white-space: nowrap;
+}
+
+.rec-table tr:last-child th,
+.rec-table tr:last-child td {
+    border-bottom: 0;
+}
+
+/* forms */
+
+.rec-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid var(--rec-color-border);
+    border-radius: var(--rec-radius-small);
+    background: var(--rec-color-surface);
+}
+
+.rec-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 0.88em;
+}
+
+.rec-field--inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+}
+
+.rec-field input:not([type="checkbox"]),
+.rec-field textarea,
+.rec-field select {
+    width: 100%;
+    padding: 7px 9px;
+    font: inherit;
+    color: var(--rec-color-text);
+    background: var(--rec-color-background);
+    border: 1px solid var(--rec-color-border);
+    border-radius: 8px;
+}
+
+.rec-form .rec-button--primary {
+    align-self: flex-start;
+}
+
+/* ---------------------------------------------------------------- composer */
+
+.rec-composer {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 8px;
+    padding: 11px 12px 8px;
+    border-top: 1px solid var(--rec-color-border);
+    background: color-mix(in srgb, var(--rec-color-surface) 96%, var(--rec-color-primary));
+}
+
+.rec-composer__projects {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.rec-composer__project-pill {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 3px;
+    max-width: 155px;
+    padding: 3px 5px 3px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--rec-color-primary) 12%, var(--rec-color-background));
+    color: var(--rec-color-primary);
+    font-size: 0.66em;
+    font-weight: 650;
+}
+
+.rec-composer__project-pill button {
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}
+
+/* "Ask about this page": a quiet chip until chosen, then a pill like an attached project. */
+.rec-composer__page-pill {
+    max-width: 230px;
+    padding-left: 6px;
+}
+
+.rec-composer__pill-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-chat .rec-composer__ask-page {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 4px;
+    min-height: 24px;
+    margin: 0;
+    padding: 2px 9px 2px 7px;
+    border: 1px dashed color-mix(in srgb, var(--rec-color-primary) 35%, var(--rec-color-border));
+    border-radius: 999px;
+    background: transparent;
+    color: var(--rec-color-primary);
+    font: inherit;
+    font-size: 0.68em;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.rec-chat .rec-composer__ask-page:hover:not(:disabled) {
+    border-style: solid;
+    border-color: var(--rec-color-focus);
+    background: color-mix(in srgb, var(--rec-color-focus) 10%, var(--rec-color-background));
+}
+
+.rec-chat .rec-composer__ask-page:focus-visible {
+    outline: 2px solid var(--rec-color-focus);
+    outline-offset: 1px;
+}
+
+.rec-chat .rec-composer__ask-page:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+
+
+.rec-composer textarea {
+    resize: none;
+    width: 100%;
+    min-height: 40px;
+    overflow-y: hidden;
+    padding: 9px 12px;
+    font: inherit;
+    color: var(--rec-color-text);
+    background: var(--rec-color-background);
+    border: 1px solid var(--rec-color-border);
+    border-radius: calc(var(--rec-radius-small) + 2px);
+    box-shadow: inset 0 1px 1px rgb(12 25 79 / 0.03);
+}
+
+/* A soft glow around the input stands in for per-reply warnings; the line under it says why. */
+.rec-composer textarea:focus {
+    outline: none;
+    border-color: color-mix(in srgb, var(--rec-color-primary) 55%, var(--rec-color-border));
+    box-shadow:
+        0 0 0 3px color-mix(in srgb, var(--rec-color-focus) 18%, transparent),
+        0 0 18px color-mix(in srgb, var(--rec-color-focus) 22%, transparent);
+}
+
+.rec-composer textarea:not(:focus) {
+    box-shadow: 0 0 12px color-mix(in srgb, var(--rec-color-focus) 10%, transparent);
+}
+
+.rec-composer__disclaimer {
+    color: var(--rec-color-text-muted);
+    font-size: 0.92em;
+    opacity: 0.85;
+}
+
+.rec-composer textarea[aria-invalid="true"] {
+    border-color: var(--rec-color-danger);
+}
+
+.rec-send {
+    display: grid;
+    place-items: center;
+    align-self: end;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 13px;
+    background: linear-gradient(135deg, var(--rec-color-primary), color-mix(in srgb, var(--rec-color-primary) 78%, #000));
+    color: var(--rec-color-on-primary);
+    box-shadow: 0 5px 12px color-mix(in srgb, var(--rec-color-primary) 25%, transparent);
+}
+
+/* Stop sits where send was, in the same circle, so the control does not jump. */
+.rec-chat .rec-send--stop {
+    background: var(--rec-color-text);
+    color: var(--rec-color-background);
+}
+
+.rec-chat .rec-send--stop:disabled {
+    opacity: 0.5;
+}
+
+.rec-composer__help {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 1.1em;
+    font-size: 0.75em;
+}
+
+/* ---------------------------------------------------------------- motion */
+
+@keyframes rec-blink {
+    50% {
+        opacity: 0;
+    }
+}
+
+@keyframes rec-bounce {
+    0%,
+    80%,
+    100% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+    40% {
+        transform: translateY(-4px);
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rec-chat *,
+    .rec-chat *::before,
+    .rec-chat *::after {
+        animation: none !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .rec-chat {
+        border-radius: 0;
+        border: 0;
+    }
+}
+
+/* ---------------------------------------------------------------- step-by-step panel */
+
+.rec-ask {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0 12px;
+    padding: 14px;
+    border: 1px solid color-mix(in srgb, var(--rec-color-primary) 20%, var(--rec-color-border));
+    border-bottom: 0;
+    border-radius: var(--rec-radius) var(--rec-radius) 0 0;
+    background: var(--rec-color-surface);
+    box-shadow: 0 -10px 30px rgb(12 25 79 / 0.11);
+    max-height: none;
+    overflow: hidden;
+    animation: rec-fade-in 0.2s ease-out;
+}
+
+.rec-ask__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.rec-ask__title {
+    margin: 0;
+    font-size: 0.98em;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.rec-ask__progress {
+    width: 100%;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: var(--rec-color-surface-muted);
+}
+
+.rec-ask__progress span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform-origin: left center;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--rec-color-primary), color-mix(in srgb, var(--rec-color-primary) 62%, #ff9500));
+    transition: transform 0.22s ease;
+}
+
+.rec-ask__hint {
+    margin: -2px 0 0;
+    color: var(--rec-color-text-muted);
+    font-size: 0.8em;
+    line-height: 1.4;
+}
+
+.rec-ask__content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    margin: -3px;
+    padding: 3px;
+    overflow: hidden;
+}
+
+.rec-ask__options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.rec-ask__option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px;
+    border: 1px solid var(--rec-color-border);
+    border-radius: var(--rec-radius-small);
+    background: var(--rec-color-background);
+    color: var(--rec-color-text);
+    font: inherit;
+    font-size: 0.9em;
+    text-align: left;
+    cursor: pointer;
+}
+
+.rec-ask__choice-label {
+    flex: 1;
+    min-width: 0;
+}
+
+.rec-ask__option:hover,
+.rec-ask__option.is-selected {
+    border-color: color-mix(in srgb, var(--rec-color-primary) 55%, var(--rec-color-border));
+    background: color-mix(in srgb, var(--rec-color-primary) 7%, var(--rec-color-background));
+}
+
+.rec-ask__options--appointment {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.rec-ask__options--schedule {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.rec-ask__options--schedule .rec-ask__option {
+    justify-content: center;
+    min-height: 48px;
+    padding: 9px;
+    text-align: center;
+}
+
+.rec-ask__options--schedule .rec-ask__key {
+    display: none;
+}
+
+.rec-ask__options--appointment .rec-ask__option {
+    min-height: 58px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 11px 12px;
+    font-size: 0.82em;
+    font-weight: 650;
+}
+
+.rec-ask__options--appointment .rec-ask__key {
+    display: none;
+}
+
+.rec-ask__options--appointment .rec-ask__choice-label {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.rec-ask__choice-icon {
+    display: inline-grid;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--rec-color-primary) 12%, var(--rec-color-background));
+    color: var(--rec-color-primary);
+}
+
+.rec-ask__options--transport,
+.rec-ask__options--platforms {
+    display: grid;
+    gap: 8px;
+}
+
+.rec-ask__options--transport {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rec-ask__options--platforms {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.rec-ask__options--transport .rec-ask__option,
+.rec-ask__options--platforms .rec-ask__option {
+    min-height: 54px;
+    gap: 7px;
+    padding: 8px;
+    font-size: 0.78em;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.rec-ask__options--transport .rec-ask__key,
+.rec-ask__options--platforms .rec-ask__key {
+    display: none;
+}
+
+.rec-ask__options--platforms .rec-ask__choice-icon {
+    flex-basis: 28px;
+    width: 28px;
+    height: 28px;
+}
+
+.rec-ask__options--transport .rec-ask__choice-label,
+.rec-ask__options--platforms .rec-ask__choice-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rec-ask__options--appointment .rec-ask__option > .rec-icon {
+    flex: 0 0 auto;
+    padding: 3px;
+    border-radius: 50%;
+    background: var(--rec-color-primary);
+    color: var(--rec-color-on-primary);
+    box-sizing: content-box;
+}
+
+.rec-ask__options--projects {
+    flex-direction: row;
+    align-items: stretch;
+    max-height: none;
+    padding: 1px 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+}
+
+.rec-ask__options--projects::-webkit-scrollbar {
+    display: none;
+}
+
+.rec-ask__project-carousel {
+    position: relative;
+    min-width: 0;
+}
+
+.rec-ask__project-section {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.rec-ask__project-section-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding-inline: 2px;
+}
+
+.rec-ask__project-section-heading strong {
+    font-size: 0.84em;
+}
+
+.rec-ask__project-section-heading span {
+    color: var(--rec-color-text-muted);
+    font-size: 0.72em;
+}
+
+.rec-ask__options--projects > li {
+    display: flex;
+    flex: 0 0 min(66%, 190px);
+    scroll-snap-align: start;
+}
+
+.rec-ask__option--project {
+    position: relative;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 230px;
+    height: 230px;
+    gap: 7px;
+    padding: 8px;
+}
+
+.rec-ask__project-arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid var(--rec-color-border);
+    border-radius: 50%;
+    background: var(--rec-color-background);
+    color: var(--rec-color-primary);
+    box-shadow: 0 2px 8px rgb(12 25 79 / 0.18);
+    transform: translateY(-50%);
+}
+
+.rec-ask__project-arrow--previous {
+    left: 7px;
+}
+
+.rec-ask__project-arrow--next {
+    right: 7px;
+}
+
+.rec-chat .rec-ask__project-arrow:disabled {
+    visibility: hidden;
+}
+
+.rec-ask__option--project .rec-ask__key {
+    display: none;
+}
+
+.rec-ask__project-image {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: calc(var(--rec-radius-small) - 2px);
+    background: var(--rec-color-surface-muted);
+    color: var(--rec-color-primary);
+}
+
+.rec-ask__option--project > .rec-ask__project-image {
+    flex: none;
+}
+
+.rec-ask__project-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.rec-ask__option-copy {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    gap: 1px;
+}
+
+.rec-ask__option-copy strong,
+.rec-ask__option-copy small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-ask__option--project .rec-ask__option-copy {
+    flex: 0 0 auto;
+    min-height: 52px;
+    text-align: left;
+}
+
+.rec-ask__option--project .rec-ask__option-copy strong {
+    display: -webkit-box;
+    min-height: 2.4em;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.rec-ask__option--project .rec-ask__option-copy small {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.rec-ask__option-copy strong {
+    font-size: 0.95em;
+    font-weight: 650;
+}
+
+.rec-ask__option-copy small {
+    color: var(--rec-color-text-muted);
+    font-size: 0.76em;
+}
+
+.rec-ask__recommended {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    flex-shrink: 0;
+    padding: 2px 5px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--rec-color-primary) 12%, var(--rec-color-background));
+    color: var(--rec-color-primary);
+    font-size: 0.65em;
+    font-weight: 700;
+    align-self: auto;
+    margin-top: 0;
+}
+
+.rec-ask__option--project > .rec-icon {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    padding: 3px;
+    border-radius: 50%;
+    background: var(--rec-color-primary);
+    color: var(--rec-color-on-primary);
+    box-sizing: content-box;
+}
+
+.rec-ask__key {
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: var(--rec-color-surface-muted);
+    color: var(--rec-color-text-muted);
+    font-size: 0.8em;
+    font-weight: 600;
+}
+
+.rec-ask__other {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.rec-ask__input {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 10px;
+    border: 1px solid var(--rec-color-border);
+    border-radius: var(--rec-radius-small);
+    background: var(--rec-color-background);
+    color: var(--rec-color-text);
+    font: inherit;
+    font-size: 0.9em;
+    resize: none;
+}
+
+.rec-ask__other .rec-ask__input {
+    min-height: 42px;
+}
+
+.rec-ask__other .rec-button {
+    min-height: 42px;
+    padding-inline: 14px;
+    white-space: nowrap;
+}
+
+.rec-ask__other .rec-button,
+.rec-ask__footer .rec-button,
+.rec-ask__nav-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+}
+
+.rec-ask__input:focus-visible {
+    outline: 2px solid var(--rec-color-focus);
+    outline-offset: 1px;
+}
+
+.rec-ask__project-search {
+    width: 100%;
+    margin: 0;
+}
+
+.rec-ask__project-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin: -2px 1px 7px;
+    color: var(--rec-color-text-muted);
+    font-size: 0.76em;
+}
+
+.rec-ask__project-meta span:last-child {
+    color: var(--rec-color-primary);
+    font-weight: 650;
+}
+
+.rec-ask__selected-projects {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+
+.rec-ask__selected-projects-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--rec-color-text-muted);
+    font-size: 0.76em;
+}
+
+.rec-ask__selected-projects-heading .rec-link-button {
+    padding: 1px 2px;
+    color: var(--rec-color-primary);
+    font-size: 1em;
+    font-weight: 650;
+}
+
+.rec-ask__selected-project-list {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.rec-ask__selected-project-list::-webkit-scrollbar {
+    display: none;
+}
+
+.rec-ask__selected-project {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 3px;
+    max-width: 150px;
+    padding: 4px 6px 4px 8px;
+    border: 1px solid color-mix(in srgb, var(--rec-color-primary) 45%, var(--rec-color-border));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--rec-color-primary) 9%, var(--rec-color-background));
+    color: var(--rec-color-text);
+    font: inherit;
+    font-size: 0.68em;
+    cursor: pointer;
+}
+
+.rec-ask__selected-project span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-ask__selected-project .rec-icon {
+    flex: 0 0 auto;
+    color: var(--rec-color-primary);
+}
+
+.rec-ask__empty {
+    margin: 4px 0 0;
+    color: var(--rec-color-text-muted);
+    font-size: 0.84em;
+}
+
+.rec-ask__code {
+    letter-spacing: 0.3em;
+    font-variant-numeric: tabular-nums;
+}
+
+.rec-ask__error {
+    margin: 0;
+    color: var(--rec-color-danger);
+    font-size: 0.82em;
+}
+
+.rec-ask__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 34px;
+    gap: 14px;
+}
+
+.rec-ask__footer .rec-button {
+    margin-left: auto;
+}
+
+.rec-ask__footer .rec-link-button {
+    min-height: 36px;
+    padding: 7px 10px;
+}
+
+.rec-ask__nav-button {
+    border: 1px solid var(--rec-color-border);
+    border-radius: var(--rec-radius-small);
+    background: var(--rec-color-background);
+    color: var(--rec-color-text);
+    text-decoration: none;
+}
+
+.rec-ask__nav-button:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--rec-color-primary) 55%, var(--rec-color-border));
+    background: color-mix(in srgb, var(--rec-color-primary) 7%, var(--rec-color-background));
+}
+
+.rec-chat .rec-link-button:disabled {
+    color: var(--rec-color-text-muted);
+    cursor: default;
+    text-decoration: none;
+    opacity: 0.6;
+}
+
+/* Do not show an unusable Back action on the first step. */
+.rec-ask__footer > .rec-link-button:first-child:disabled {
+    visibility: hidden;
+}
+
+.rec-ask__review {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    font-size: 0.88em;
+}
+
+.rec-ask__review > div {
+    display: grid;
+    grid-template-columns: 8.5em 1fr auto;
+    gap: 8px;
+    align-items: baseline;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--rec-color-border);
+}
+
+.rec-ask__review dt {
+    color: var(--rec-color-text-muted);
+}
+
+.rec-ask__review dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.rec-ask__done {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin: 0;
+    font-size: 0.9em;
+}
+
+.rec-ask--complete .rec-ask__done {
+    padding: 10px;
+    border-radius: var(--rec-radius-small);
+    background: color-mix(in srgb, var(--rec-color-primary) 8%, var(--rec-color-surface));
+}
+
+.rec-ask__done svg {
+    flex-shrink: 0;
+    color: var(--rec-color-primary);
+}
+
+.rec-ask + .rec-composer {
+    border-top-color: transparent;
+}
+
+/* A form in the reply, opened in the panel. */
+.rec-form-card {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px 7px 9px;
+    font-size: 0.9em;
+    border: 1px solid color-mix(in srgb, var(--rec-color-primary) 22%, var(--rec-color-border));
+    border-radius: var(--rec-radius-small);
+    background: linear-gradient(115deg, color-mix(in srgb, var(--rec-color-surface) 96%, var(--rec-color-primary)), var(--rec-color-surface));
+    box-shadow: 0 4px 12px rgb(12 25 79 / 0.04);
+}
+
+.rec-form-card__icon {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--rec-color-primary) 10%, var(--rec-color-surface));
+    color: var(--rec-color-primary);
+    flex-shrink: 0;
+}
+
+.rec-form-card__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    flex: 1;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.rec-form-card__text strong {
+    font-size: 0.95em;
+    font-weight: 600;
+}
+
+/* One line each: the card stays a slim row. */
+.rec-form-card__text > * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-form-card .rec-button--small {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.86em;
+}
+
+.rec-form-card__done {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    color: var(--rec-color-primary);
+    font-weight: 600;
+    font-size: 0.88em;
+}
+
+.rec-form-card__incomplete {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, #d99000 12%, var(--rec-color-background));
+    color: #a56800;
+    font-size: 0.78em;
+    font-weight: 650;
+}
+
+/* Leave this form? — one line and two pill buttons, side by side. */
+.rec-ask.rec-ask--cancel-warning {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 10px 10px;
+    padding: 14px 14px 12px;
+    animation: rec-fade-in 0.15s ease-out;
+}
+
+.rec-leave__icon {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: color-mix(in srgb, #d99000 14%, var(--rec-color-background));
+    color: #b37400;
+}
+
+.rec-leave__text h3 {
+    font-size: 0.95em;
+    font-weight: 650;
+    line-height: 1.25;
+}
+
+.rec-leave__text p {
+    color: var(--rec-color-text-muted);
+    font-size: 0.82em;
+    line-height: 1.3;
+}
+
+.rec-ask__cancel-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.rec-leave__stay,
+.rec-leave__go {
+    height: 38px;
+    border-radius: 999px;
+    font-size: 0.88em;
+    font-weight: 600;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.rec-leave__stay {
+    border: 0;
+    background: var(--rec-color-primary);
+    color: var(--rec-color-on-primary);
+}
+
+.rec-leave__stay:hover {
+    background: color-mix(in srgb, var(--rec-color-primary) 85%, #000);
+}
+
+.rec-leave__go {
+    border: 1px solid var(--rec-color-border);
+    background: transparent;
+    color: #c62828;
+}
+
+.rec-leave__go:hover {
+    border-color: color-mix(in srgb, #c62828 40%, var(--rec-color-border));
+    background: color-mix(in srgb, #c62828 7%, transparent);
+}
+
+/* Compact booking/callback forms without changing clarification panels. */
+.rec-ask--form,
+.rec-ask--cancel-warning,
+.rec-ask--complete {
+    margin: 0;
+    border-right: 0;
+    border-left: 0;
+    border-radius: var(--rec-radius) var(--rec-radius) 0 0;
+    box-shadow: 0 -8px 24px rgb(12 25 79 / 0.09);
+}
+
+.rec-ask--form {
+    gap: 6px;
+    padding: 10px 11px;
+}
+
+.rec-ask--form .rec-ask__title {
+    font-size: 0.91em;
+}
+
+.rec-ask--form .rec-ask__hint {
+    font-size: 0.74em;
+    line-height: 1.3;
+}
+
+.rec-ask--form .rec-ask__content {
+    gap: 8px;
+}
+
+.rec-ask--form .rec-ask__options--appointment .rec-ask__option {
+    min-height: 48px;
+    padding: 8px 9px;
+}
+
+.rec-ask--form .rec-ask__options--schedule .rec-ask__option,
+.rec-ask--form .rec-ask__options--transport .rec-ask__option,
+.rec-ask--form .rec-ask__options--platforms .rec-ask__option {
+    min-height: 42px;
+    padding: 6px 7px;
+}
+
+.rec-ask--form .rec-ask__choice-icon {
+    width: 27px;
+    height: 27px;
+    flex-basis: 27px;
+}
+
+.rec-ask--form .rec-ask__option--project {
+    min-height: 205px;
+    height: 205px;
+    padding: 6px;
+}
+
+.rec-ask--form .rec-ask__option--project .rec-ask__option-copy {
+    min-height: 45px;
+    font-size: 0.92em;
+}
+
+.rec-ask--form .rec-ask__input,
+.rec-ask--form .rec-ask__other .rec-ask__input,
+.rec-ask--form .rec-ask__other .rec-button {
+    min-height: 38px;
+}
+
+.rec-ask--form .rec-ask__input {
+    padding: 7px 9px;
+    font-size: 0.84em;
+}
+
+.rec-ask--form .rec-ask__footer {
+    min-height: 30px;
+    gap: 8px;
+}
+
+.rec-ask--form .rec-ask__footer .rec-link-button {
+    min-height: 32px;
+    padding: 5px 8px;
+}
+
+/* Date and time pickers: compact two-column presets with one clean custom-value row. */
+.rec-ask--form[data-field="visitDate"] .rec-ask__content,
+.rec-ask--form[data-field="visitTime"] .rec-ask__content {
+    gap: 7px;
+}
+
+.rec-ask--form[data-field="visitDate"] .rec-ask__options--schedule,
+.rec-ask--form[data-field="visitTime"] .rec-ask__options--schedule {
+    gap: 6px;
+}
+
+.rec-ask--form[data-field="visitDate"] .rec-ask__options--schedule .rec-ask__option,
+.rec-ask--form[data-field="visitTime"] .rec-ask__options--schedule .rec-ask__option {
+    position: relative;
+    min-height: 38px;
+    padding: 6px 28px 6px 8px;
+    border-radius: 10px;
+    font-size: 0.78em;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.rec-ask--form[data-field="visitDate"] .rec-ask__options--schedule .rec-ask__option > .rec-icon,
+.rec-ask--form[data-field="visitTime"] .rec-ask__options--schedule .rec-ask__option > .rec-icon {
+    position: absolute;
+    right: 8px;
+    width: 14px;
+    height: 14px;
+    padding: 2px;
+    border-radius: 50%;
+    background: var(--rec-color-primary);
+    color: var(--rec-color-on-primary);
+    box-sizing: content-box;
+}
+
+.rec-ask--form[data-field="visitDate"] .rec-ask__other,
+.rec-ask--form[data-field="visitTime"] .rec-ask__other {
+    width: 100%;
+}
+
+.rec-ask--form[data-field="visitDate"] .rec-ask__other .rec-ask__input,
+.rec-ask--form[data-field="visitTime"] .rec-ask__other .rec-ask__input {
+    width: 100%;
+    min-height: 36px;
+    padding: 6px 9px;
+    border-radius: 10px;
+    font-size: 0.8em;
+}
+
+.rec-ask--form[data-field="visitDate"] .rec-ask__footer,
+.rec-ask--form[data-field="visitTime"] .rec-ask__footer {
+    margin-top: 1px;
+}
+
+/* Keep the five time presets balanced in the same two-column rhythm as dates. */
+.rec-ask--form[data-field="visitTime"] .rec-ask__options--schedule > li:last-child {
+    grid-column: 1 / -1;
+}
+
+.rec-ask .rec-icon-button {
+    width: 28px;
+    height: 28px;
+    color: var(--rec-color-text-muted);
+}
+
+.rec-ask .rec-icon-button:hover:not(:disabled) {
+    background: var(--rec-color-surface-muted);
+}
+
+/* ---------------------------------------------------------------- share */
+
+
+
+
+
+
+
+.rec-card__share:focus-visible,
+.rec-share__option:focus-visible {
+    outline: 2px solid var(--rec-color-focus);
+    outline-offset: 2px;
+}
+
+/* Covers the whole chat; the sheet rises from the bottom. */
+.rec-share {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: rgb(12 25 79 / 0.32);
+    animation: rec-fade-in 0.16s ease-out;
+}
+
+.rec-share__sheet {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-height: 90%;
+    overflow-y: auto;
+    padding: 14px;
+    border-radius: var(--rec-radius) var(--rec-radius) 0 0;
+    background: var(--rec-color-surface);
+    color: var(--rec-color-text);
+    box-shadow: 0 -12px 34px rgb(12 25 79 / 0.2);
+    animation: rec-share-rise 0.2s ease-out;
+}
+
+@keyframes rec-share-rise {
+    from {
+        transform: translateY(24px);
+        opacity: 0;
+    }
+}
+
+.rec-share__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.rec-chat .rec-share__title {
+    margin: 0;
+    font-size: 0.98em;
+    font-weight: 700;
+}
+
+.rec-share__preview {
+    margin: 0;
+    max-height: 120px;
+    overflow-y: auto;
+    padding: 10px 12px;
+    border: 1px solid var(--rec-color-border);
+    border-radius: var(--rec-radius-small);
+    background: var(--rec-color-surface-muted);
+    color: var(--rec-color-text);
+    font: inherit;
+    font-size: 0.8em;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.rec-share__options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.rec-share__option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 48px;
+    padding: 8px 10px;
+    border: 1px solid var(--rec-color-border);
+    border-radius: var(--rec-radius-small);
+    background: var(--rec-color-background);
+    color: var(--rec-color-text);
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.rec-share__option:hover {
+    border-color: var(--rec-color-primary);
+}
+
+.rec-share__option strong {
+    display: block;
+    font-size: 0.88em;
+}
+
+.rec-share__option small {
+    display: block;
+    color: var(--rec-color-text-muted);
+    font-size: 0.74em;
+}
+
+.rec-share__icon {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--rec-color-surface-muted);
+    color: var(--rec-color-primary);
+}
+
+.rec-share__option--whatsapp .rec-share__icon {
+    background: #e7f8ee;
+    color: #128c4b;
+}
+
+.rec-share__option--sms .rec-share__icon {
+    background: #e8f3fb;
+    color: #0b6aa2;
+}
+
+.rec-share__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 0;
+    border: 0;
+    background: none;
+    color: var(--rec-color-primary);
+    font: inherit;
+    font-size: 0.85em;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.rec-share__option--self .rec-share__icon {
+    background: #fff1e0;
+    color: #c76a00;
+}
+
+.rec-share__form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.rec-chat .rec-share__hint {
+    margin: 0;
+    color: var(--rec-color-text-muted);
+    font-size: 0.8em;
+    line-height: 1.45;
+}
+
+.rec-share__input {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid var(--rec-color-border);
+    border-radius: var(--rec-radius-small);
+    background: var(--rec-color-background);
+    color: var(--rec-color-text);
+    font: inherit;
+    font-size: 0.9em;
+}
+
+.rec-share__input:focus {
+    outline: 2px solid var(--rec-color-focus);
+    outline-offset: 1px;
+}
+
+.rec-share__submit {
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: var(--rec-radius-small);
+    background: var(--rec-color-primary);
+    color: var(--rec-color-on-primary);
+    font: inherit;
+    font-size: 0.88em;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.rec-share__submit:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.rec-share__link {
+    border: 0;
+    background: none;
+    color: var(--rec-color-primary);
+    font: inherit;
+    font-size: 0.8em;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.rec-chat .rec-share__status {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 0;
+    padding: 9px 11px;
+    border-radius: var(--rec-radius-small);
+    font-size: 0.82em;
+    line-height: 1.4;
+}
+
+.rec-share__status svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.rec-share__status--info {
+    background: color-mix(in srgb, var(--rec-color-primary) 8%, var(--rec-color-background));
+    color: var(--rec-color-text);
+}
+
+.rec-share__status--success {
+    background: #e7f8ee;
+    color: #0d6b38;
+}
+
+.rec-share__status--error {
+    background: #fdecec;
+    color: #a12020;
+}
+
+/* ---------------------------------------------------------------- property card
+   White, rounded, photo on top: status and possession on the photo, then name,
+   place and a bold price, a fact grid with icons, configuration pills,
+   amenities, and Details / Enquire. One accent colour runs through it. */
+
+.rec-card {
+    /* The website's colours: its primary (navy on Property Assistant) for price and buttons,
+       its highlight (orange) for status and the location pin. */
+    --rec-card-accent: var(--rec-color-primary);
+    --rec-card-accent-hover: color-mix(in srgb, var(--rec-card-accent) 82%, #000);
+    --rec-card-highlight: var(--rec-color-focus);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    container-type: inline-size;
+    border: 1px solid color-mix(in srgb, var(--rec-color-border) 70%, transparent);
+    border-radius: 16px;
+    background: var(--rec-color-surface);
+    color: var(--rec-color-text);
+    box-shadow: 0 1px 3px rgb(16 24 40 / 0.06);
+    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.rec-card:hover {
+    border-color: color-mix(in srgb, var(--rec-card-accent) 30%, var(--rec-color-border));
+    box-shadow: 0 10px 24px rgb(16 24 40 / 0.12);
+    transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rec-card,
+    .rec-card:hover {
+        transition: none;
+        transform: none;
+    }
+}
+
+/* Status (and Demo data) top left; the heart has the top right. */
+.rec-card__badges {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1;
+    max-width: calc(100% - 56px);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    pointer-events: none;
+}
+
+.rec-card__badges .rec-badge {
+    padding: 3px 10px;
+    font-size: 0.64em;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
+}
+
+.rec-card__badges .rec-badge--launch,
+.rec-card__badges .rec-badge--default {
+    background: var(--rec-card-highlight);
+    color: #121212;
+}
+
+/* Possession: a frosted white pill at the bottom left of the photo, above the dots. */
+.rec-card__media .rec-card__possession {
+    position: absolute;
+    left: 10px;
+    bottom: 26px;
+    z-index: 1;
+    max-width: calc(100% - 20px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 2px 8px;
+    background: rgb(255 255 255 / 0.9);
+    color: #374151;
+    font-size: 0.64em;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+    pointer-events: none;
+}
+
+.rec-card__fav {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.92);
+    color: #4b5563;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.16);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.rec-card__fav:hover:not(:disabled) {
+    transform: scale(1.08);
+}
+
+.rec-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px 14px;
+}
+
+.rec-card__head {
+    min-width: 0;
+}
+
+.rec-card__title {
+    overflow: hidden;
+    font-size: 0.93em;
+    font-weight: 650;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-card__developer {
+    overflow: hidden;
+    margin-top: 1px;
+    color: var(--rec-color-text-muted);
+    font-size: 0.72em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-card__location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    margin-top: -4px;
+    color: var(--rec-color-text-muted);
+    font-size: 0.72em;
+    line-height: 1.35;
+}
+
+.rec-card__location > svg {
+    flex-shrink: 0;
+    color: var(--rec-card-highlight);
+}
+
+.rec-card__location-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-card .rec-card__map {
+    flex-shrink: 0;
+    color: var(--rec-card-accent);
+}
+
+/* The price leads; the configuration it is for and the budget fit sit beside it. */
+.rec-card__primary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin-top: -2px;
+}
+
+.rec-card__primary-price {
+    color: var(--rec-card-accent);
+    font-size: clamp(1em, 7cqi, 1.18em);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.rec-card__primary-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.rec-card__chip {
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--rec-card-accent) 10%, var(--rec-color-surface));
+    color: var(--rec-card-accent);
+    font-size: 0.64em;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+/* Facts in two columns: icon, value, and a small caps label under it. */
+.rec-card__specs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 12px;
+    padding-top: 10px;
+    border-top: 1px solid color-mix(in srgb, var(--rec-color-border) 70%, transparent);
+}
+
+.rec-card__spec {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+}
+
+.rec-card__spec--wide {
+    grid-column: 1 / -1;
+}
+
+.rec-card__spec > svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: color-mix(in srgb, var(--rec-color-text-muted) 75%, transparent);
+}
+
+.rec-card__spec > div {
+    display: flex;
+    flex-direction: column-reverse;
+    min-width: 0;
+}
+
+.rec-card__spec dd {
+    margin: 0;
+    overflow: hidden;
+    color: var(--rec-color-text);
+    font-size: 0.72em;
+    font-weight: 600;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-card__spec dt {
+    color: var(--rec-color-text-muted);
+    font-size: 0.56em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+/* Configurations: small tiles, two per row; the one priced above is outlined in the accent. */
+.rec-card__subhead {
+    margin-bottom: 5px;
+    color: var(--rec-color-text-muted);
+    font-size: 0.56em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.rec-card__configs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.rec-chat .rec-card__config {
+    display: grid;
+    grid-template-areas:
+        "label"
+        "price"
+        "area";
+    gap: 1px;
+    width: 100%;
+    height: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--rec-color-border);
+    border-radius: 10px;
+    background: var(--rec-color-surface);
+    color: inherit;
+    font-size: 0.68em;
+    text-align: left;
+    overflow-wrap: normal;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.rec-chat .rec-card__config:hover {
+    border-color: color-mix(in srgb, var(--rec-card-accent) 45%, var(--rec-color-border));
+}
+
+.rec-chat .rec-card__config[aria-pressed="true"] {
+    border-color: var(--rec-card-accent);
+    background: color-mix(in srgb, var(--rec-card-accent) 7%, var(--rec-color-surface));
+}
+
+.rec-chat .rec-card__config:focus-visible {
+    outline: 2px solid var(--rec-color-focus);
+    outline-offset: 1px;
+}
+
+.rec-card__config-label {
+    grid-area: label;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 5px;
+}
+
+.rec-card__config-label .rec-card__budget {
+    font-size: 0.82em;
+}
+
+.rec-card__config-price {
+    grid-area: price;
+    color: var(--rec-card-accent);
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.rec-card__config-area {
+    grid-area: area;
+    overflow: hidden;
+    color: var(--rec-color-text-muted);
+    font-size: 0.92em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-card__amenities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 0.64em;
+}
+
+.rec-card__amenities li {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--rec-color-surface-muted);
+    color: var(--rec-color-text-muted);
+    white-space: nowrap;
+}
+
+/* Details and Enquire, then a slim row for Ask about and Share. */
+.rec-card__footer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 2px;
+}
+
+.rec-card__actions {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    gap: 8px;
+}
+
+.rec-card__details,
+.rec-chat .rec-card__enquire {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 8px 10px;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 0.72em;
+    font-weight: 650;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.rec-card__details {
+    border: 1px solid var(--rec-color-border);
+    background: var(--rec-color-surface);
+    color: var(--rec-color-text);
+}
+
+.rec-card__details:hover {
+    border-color: var(--rec-card-accent);
+    color: var(--rec-card-accent);
+}
+
+.rec-chat .rec-card__enquire {
+    border: 1px solid var(--rec-card-accent);
+    background: var(--rec-card-accent);
+    color: #fff;
+}
+
+.rec-chat .rec-card__enquire:hover:not(:disabled) {
+    border-color: var(--rec-card-accent-hover);
+    background: var(--rec-card-accent-hover);
+}
+
+.rec-chat .rec-card__enquire:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.rec-card__details:focus-visible,
+.rec-card__enquire:focus-visible,
+.rec-card__context:focus-visible,
+.rec-card__share:focus-visible {
+    outline: 2px solid var(--rec-color-focus);
+    outline-offset: 2px;
+}
+
+.rec-card__more {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+}
+
+.rec-chat .rec-card__context,
+.rec-chat .rec-card__share {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 0;
+    padding: 4px 10px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--rec-color-text-muted);
+    font: inherit;
+    font-size: 0.68em;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.rec-chat .rec-card__context:hover,
+.rec-chat .rec-card__share:hover {
+    background: var(--rec-color-surface-muted);
+    color: var(--rec-color-text);
+}
+
+.rec-chat .rec-card__context.is-selected {
+    background: color-mix(in srgb, var(--rec-card-accent) 10%, var(--rec-color-surface));
+    color: var(--rec-card-accent);
+}
+
+.rec-card__context svg,
+.rec-card__share svg {
+    flex-shrink: 0;
+}
+
+.rec-card__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---------------------------------------------------------------- cut text, shown in full
+   Text that ends in "…" unfolds onto more lines while it is hovered (or its
+   row has keyboard focus), so nothing stays hidden. Text that fits is unchanged. */
+
+.rec-header__name:hover h2,
+.rec-header__meta:hover p,
+.rec-history__item:hover .rec-history__title,
+.rec-history__item:focus-visible .rec-history__title,
+.rec-ask__option:hover .rec-ask__choice-label,
+.rec-ask__option:hover .rec-ask__option-copy strong,
+.rec-ask__option:hover .rec-ask__option-copy small,
+.rec-ask__selected-project:hover span,
+.rec-form-card__text:hover > *,
+.rec-card__media:hover .rec-card__possession,
+.rec-card__head:hover .rec-card__title,
+.rec-card__head:hover .rec-card__developer,
+.rec-card__location:hover .rec-card__location-text,
+.rec-card__spec:hover dd,
+.rec-chat .rec-card__config:hover .rec-card__config-area,
+.rec-chat .rec-card__config:focus-visible .rec-card__config-area,
+.rec-card__context:hover .rec-card__label {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* A long place keeps its pin and Map link on the first line as it unfolds. */
+.rec-card__location:hover {
+    align-items: flex-start;
+}
+
+/* ---------------------------------------------------------------- project details
+   One project in depth, wide and short. Reading order follows how buyers
+   decide: what and where, how much, the four numbers they compare, the
+   configurations, then actions. Numbers use tabular figures so they line up;
+   long lists wait behind "More details" so the card stays one screen tall. */
+
+.rec-bubble--assistant:has(.rec-pd) {
+    width: min(520px, 100%);
+}
+
+.rec-pd {
+    --rec-pd-accent: var(--rec-color-primary);
+    --rec-pd-highlight: var(--rec-color-focus);
+    --rec-pd-line: color-mix(in srgb, var(--rec-color-border) 75%, transparent);
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--rec-pd-line);
+    border-radius: 16px;
+    background: var(--rec-color-surface);
+    color: var(--rec-color-text);
+    box-shadow: 0 1px 3px rgb(16 24 40 / 0.06);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Photo left, identity and price right. */
+.rec-pd__top {
+    display: grid;
+    grid-template-columns: minmax(104px, 36%) minmax(0, 1fr);
+    gap: 12px;
+    align-items: stretch;
+}
+
+.rec-pd__media {
+    position: relative;
+    min-height: 112px;
+    overflow: hidden;
+    border-radius: 12px;
+    background: var(--rec-color-surface-muted);
+}
+
+.rec-pd__media img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.rec-pd__placeholder {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: var(--rec-color-text-muted);
+}
+
+.rec-chat .rec-pd__fav {
+    top: 6px;
+    right: 6px;
+    width: 28px;
+    height: 28px;
+}
+
+.rec-pd__head {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+}
+
+.rec-pd__name {
+    overflow: hidden;
+    font-size: 0.98em;
+    font-weight: 700;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-pd__developer {
+    overflow: hidden;
+    color: var(--rec-color-text-muted);
+    font-size: 0.72em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-pd__place {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    margin-top: 2px;
+    color: var(--rec-color-text-muted);
+    font-size: 0.72em;
+}
+
+.rec-pd__place > svg {
+    flex-shrink: 0;
+    color: var(--rec-pd-highlight);
+}
+
+.rec-pd__place-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-pd__place a {
+    flex-shrink: 0;
+    color: var(--rec-pd-accent);
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.rec-pd__place a:hover {
+    text-decoration: underline;
+}
+
+.rec-pd__price {
+    margin-top: 4px;
+    color: var(--rec-pd-accent);
+    font-size: clamp(1.02em, 5cqi, 1.22em);
+    font-weight: 750;
+    line-height: 1.15;
+}
+
+.rec-pd__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.rec-pd__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--rec-color-surface-muted);
+    color: var(--rec-color-text);
+    font-size: 0.62em;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.rec-pd__tag--status {
+    background: var(--rec-pd-highlight);
+    color: #121212;
+}
+
+.rec-pd__tag--rera {
+    background: color-mix(in srgb, #1f7a47 12%, var(--rec-color-surface));
+    color: #1f7a47;
+}
+
+/* The four numbers, one strip, divided by hairlines. */
+.rec-pd__stats {
+    display: grid;
+    grid-template-columns: repeat(var(--rec-pd-cols, 4), minmax(0, 1fr));
+    --rec-pd-cols: 4;
+    margin: 0;
+    border: 1px solid var(--rec-pd-line);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--rec-color-surface-muted) 55%, var(--rec-color-surface));
+}
+
+@container (max-width: 380px) {
+    /* Four numbers do not fit one strip in a small chat window: two by two. */
+    .rec-pd__stats[data-count="4"] {
+        --rec-pd-cols: 2;
+    }
+
+    .rec-pd__stats[data-count="4"] .rec-pd__stat:nth-child(3) {
+        border-left: 0;
+    }
+
+    .rec-pd__stats[data-count="4"] .rec-pd__stat:nth-child(n + 3) {
+        border-top: 1px solid var(--rec-pd-line);
+    }
+}
+
+.rec-pd__stats[data-count="3"] {
+    --rec-pd-cols: 3;
+}
+
+.rec-pd__stats[data-count="2"] {
+    --rec-pd-cols: 2;
+}
+
+.rec-pd__stats[data-count="1"] {
+    --rec-pd-cols: 1;
+}
+
+.rec-pd__stat {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 1px;
+    min-width: 0;
+    padding: 7px 9px;
+}
+
+.rec-pd__stat + .rec-pd__stat {
+    border-left: 1px solid var(--rec-pd-line);
+}
+
+.rec-pd__stat dd {
+    margin: 0;
+    overflow: hidden;
+    font-size: 0.76em;
+    font-weight: 650;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-pd__stat dt,
+.rec-pd__label {
+    color: var(--rec-color-text-muted);
+    font-size: 0.58em;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.rec-pd__stat:hover dd {
+    overflow: visible;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* Configurations: label, size, price in aligned columns. */
+.rec-pd__configs {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.74em;
+}
+
+.rec-pd__configs caption {
+    margin-bottom: 3px;
+    text-align: left;
+}
+
+.rec-pd__configs th,
+.rec-pd__configs td {
+    padding: 5px 0;
+    border-top: 1px solid var(--rec-pd-line);
+    text-align: left;
+    vertical-align: baseline;
+}
+
+.rec-pd__configs th {
+    width: 1%;
+    padding-right: 12px;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+/* The size column takes what is left and shortens itself; the price never moves out. */
+.rec-pd__config-size {
+    width: 100%;
+    max-width: 0;
+    overflow: hidden;
+    color: var(--rec-color-text-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rec-pd__configs tr:hover .rec-pd__config-size {
+    white-space: normal;
+}
+
+.rec-pd__config-price {
+    padding-left: 12px;
+    color: var(--rec-pd-accent);
+    font-weight: 650;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.rec-chat .rec-pd__configs .rec-pd__config-price {
+    text-align: right;
+}
+
+/* Nearby: one line of chips; a label on the left. */
+.rec-pd__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.rec-pd__row > .rec-pd__label {
+    flex-shrink: 0;
+}
+
+.rec-pd__chips {
+    display: flex;
+    gap: 4px;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.rec-pd__chips::-webkit-scrollbar {
+    display: none;
+}
+
+.rec-pd__chips--wrap {
+    flex-wrap: wrap;
+    overflow: visible;
+}
+
+.rec-pd__chips li {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: baseline;
+    gap: 4px;
+    padding: 2px 8px;
+    border: 1px solid var(--rec-pd-line);
+    border-radius: 999px;
+    font-size: 0.66em;
+    white-space: nowrap;
+}
+
+.rec-pd__chips li strong {
+    font-weight: 600;
+}
+
+.rec-pd__chips li span {
+    color: var(--rec-pd-accent);
+    font-weight: 650;
+}
+
+.rec-pd__chips--plain li {
+    border: 0;
+    background: var(--rec-color-surface-muted);
+    color: var(--rec-color-text-muted);
+}
+
+.rec-pd__more {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--rec-pd-line);
+    animation: rec-fade-in 0.2s ease-out;
+}
+
+.rec-pd__more .rec-pd__label {
+    display: block;
+    margin-bottom: 3px;
+}
+
+.rec-pd__list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-left: 14px;
+    list-style: disc;
+    font-size: 0.72em;
+    line-height: 1.4;
+}
+
+.rec-pd__list li::marker {
+    color: var(--rec-pd-highlight);
+}
+
+.rec-pd__banks {
+    font-size: 0.72em;
+    line-height: 1.4;
+}
+
+.rec-pd__banks .rec-pd__label {
+    display: inline;
+    margin-right: 4px;
+}
+
+/* Actions: the website's primary colour for the main one, outlines for the rest. */
+.rec-pd__actions {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 6px;
+}
+
+.rec-chat .rec-pd__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 0;
+    min-height: 36px;
+    padding: 6px 8px;
+    border: 1px solid var(--rec-color-border);
+    border-radius: 12px;
+    background: var(--rec-color-surface);
+    color: var(--rec-pd-accent);
+    font: inherit;
+    font-size: 0.72em;
+    font-weight: 650;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.rec-chat .rec-pd__btn:hover:not(:disabled) {
+    border-color: var(--rec-pd-accent);
+    background: color-mix(in srgb, var(--rec-pd-accent) 6%, var(--rec-color-surface));
+}
+
+.rec-chat .rec-pd__btn--primary {
+    border-color: var(--rec-pd-accent);
+    background: var(--rec-pd-accent);
+    color: var(--rec-color-on-primary);
+}
+
+.rec-chat .rec-pd__btn--primary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--rec-pd-accent) 82%, #000);
+}
+
+.rec-chat .rec-pd__btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.rec-pd__btn:focus-visible,
+.rec-pd__link:focus-visible {
+    outline: 2px solid var(--rec-color-focus);
+    outline-offset: 2px;
+}
+
+.rec-pd__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 2px 6px;
+    margin-top: -4px;
+}
+
+.rec-chat .rec-pd__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--rec-color-text-muted);
+    font: inherit;
+    font-size: 0.68em;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.rec-chat .rec-pd__link:hover {
+    background: var(--rec-color-surface-muted);
+    color: var(--rec-color-text);
+}
+
+/* Narrow phones only: the photo becomes a short banner and the numbers go two by two.
+   Inside the usual chat window the card stays wide and short. */
+@container (max-width: 290px) {
+    .rec-pd__top {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .rec-pd__media {
+        min-height: 0;
+        aspect-ratio: 16 / 7;
+    }
+
+    .rec-pd__stats {
+        --rec-pd-cols: 2;
+    }
+
+    .rec-pd__stats[data-count="1"] {
+        --rec-pd-cols: 1;
+    }
+
+    .rec-pd__stat:nth-child(3) {
+        border-left: 0;
+    }
+
+    .rec-pd__stat:nth-child(n + 3) {
+        border-top: 1px solid var(--rec-pd-line);
+    }
+
+    .rec-pd__actions {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .rec-pd__actions .rec-pd__btn--primary {
+        grid-column: 1 / -1;
+    }
+
+    .rec-pd__foot {
+        gap: 0;
+    }
+
+    .rec-chat .rec-pd__link,
+    .rec-chat .rec-pd__foot .rec-card__share {
+        padding: 4px 6px;
+    }
+}
+
+/* Cut text unfolds on hover, as elsewhere. */
+.rec-pd__head:hover .rec-pd__name,
+.rec-pd__head:hover .rec-pd__developer,
+.rec-pd__place:hover .rec-pd__place-text {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
